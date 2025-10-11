@@ -1,0 +1,54 @@
+import { NextFunction, Request, Response } from "express";
+import { errorResponse } from "../utils/responseUtils";
+import { verifyToken } from "../utils/jwtHandler";
+import User from "../models/userModel";
+
+export interface AuthenticatedRequest extends Request {
+    user?: any;
+}
+
+export const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) return errorResponse(res, "Unauthorized: No token provided", 401);
+
+        const token = authHeader.split(" ")[1];
+
+        // Verify the token
+        const decoded = verifyToken(token);
+        
+        // get user
+        const user = await User.findById((decoded as any).id);
+        if (!user) return errorResponse(res, "Unauthorized", 401);
+        
+        req.user = user;
+
+        next();
+    } catch (error) {
+        errorResponse(res, "Unauthorized", 401);
+    }
+}
+
+export const authOTPMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {        
+        const authHeader = req.headers.authotp as string;
+        if (!authHeader) {
+            return errorResponse(res, "Invalid request", 401);
+        }
+
+        const token = authHeader;
+
+        // Verify the token
+        const decoded: any = verifyToken(token);
+        if (decoded && decoded.otpType !== "FORGOT_PASSWORD") return errorResponse(res, "Unauthorized", 401);
+
+        // get user
+        const user = await User.findOne({email: decoded.email});
+        if (!user) return errorResponse(res, "Unauthorized", 401);
+        req.user = user;
+
+        next();
+    } catch (error) {
+        errorResponse(res, "Unauthorized", 401);
+    }
+}
