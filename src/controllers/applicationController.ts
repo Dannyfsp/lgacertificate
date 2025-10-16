@@ -44,7 +44,7 @@ export const createApplication = async (req: AuthenticatedRequest, res: Response
         tx_ref: transactionRef,
         amount: "10000",
         currency: 'NGN',
-        redirect_url: `https://ajothrift-959d57d1f68d.herokuapp.com/api/v1/payment/verify`,
+        redirect_url: `${config.app.URL}/api/v1/payment/verify`,
         customer: {
           email: user.email,
           name: fullNames,
@@ -105,7 +105,7 @@ export const createApplication = async (req: AuthenticatedRequest, res: Response
   }
 };
 
-export const verifyApplication = async (req: AuthenticatedRequest, res: Response) => {
+export const verifyPayment = async (req: AuthenticatedRequest, res: Response) => {
     const session = await mongoose.startSession();
     session.startTransaction();
   try {
@@ -178,5 +178,54 @@ export const verifyApplication = async (req: AuthenticatedRequest, res: Response
     return errorResponse(res, err.message, 500);
   } finally {
     session.endSession();
+  }
+};
+
+export const getUserApplications = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user;
+    const applications = await Application.find({ user: user._id }).sort({ createdAt: -1 });
+    return successResponse(res,  "applications retrieved successfully", { applications });
+  } catch (err: any) {
+    return errorResponse(res, err.message, 500);
+  }
+};
+
+export const getPendingApplications = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const applications = await Application.find({ isApproved: false }).sort({ createdAt: -1 });
+    return successResponse(res,  "pending application retrieved successfully", { applications });
+  } catch (err: any) {
+    return errorResponse(res, err.message, 500);
+  }
+};
+
+export const getApprovedApplications = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const applications = await Application.find({ isApproved: false }).sort({ createdAt: -1 });
+    return successResponse(res,  "pending application retrieved successfully", { applications });
+  } catch (err: any) {
+    return errorResponse(res, err.message, 500);
+  }
+};
+
+export const approveApplicationsByAdmin = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { applicationId } = req.params;
+    const approve = req.query.approve;
+
+    const application = await Application.findById(applicationId);
+    if (!application) {
+      return errorResponse(res, "application not found", 404);
+    }
+    if (approve === 'true') {    
+    application.isApproved = true;
+    } else {
+      application.isApproved = false;
+    }
+    await application.save();
+    return successResponse(res, "application approved successfully", { application });
+  } catch (err: any) {
+    return errorResponse(res, err.message, 500);
   }
 };

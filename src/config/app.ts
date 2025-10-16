@@ -7,6 +7,7 @@ export const config = {
     },
     app: {
         NAME: process.env.APP_NAME,
+        URL: process.env.APP_URL,
         PORT: Number(process.env.PORT),
         JWT_SECRET: process.env.JWT_SECRET,
         ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
