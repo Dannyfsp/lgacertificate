@@ -41,12 +41,14 @@ const schemas = {
     fullNames: Joi.string().required(),
     fatherNames: Joi.string().required(),
     motherNames: Joi.string().required(),
-    middleName: Joi.string().required(),
     nativeTown: Joi.string().required(),
     nativePoliticalWard: Joi.string().required(),
     communityHead: Joi.string().required(),
     phoneNumber: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
-    password: Joi.string().min(6).required(),
+    nin: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
+    passport: Joi.string().required(),
+    currentAddress: Joi.string().required(),
+    lga: Joi.string().required(),
   }),
   
   loginUserSchema: Joi.object().keys({

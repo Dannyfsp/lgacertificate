@@ -4,6 +4,7 @@ import { errorResponse, successResponse } from "../utils/responseUtils";
 import { compareHash, hash } from "../utils/hash";
 import { generateToken } from "../utils/jwtHandler";
 import emitter from "../utils/common/eventlisteners";
+import Application from "../models/applicationModel";
 
 // SIGNUP
 export const signup = async (req: Request, res: Response) => {
@@ -43,12 +44,15 @@ export const login = async (req: Request, res: Response) => {
 
     const token = generateToken({id: user._id, email: user.email});
 
+    const pendingApplicationCount = await Application.countDocuments({user: user._id, isPending: true});
+    const pendingApplication = pendingApplicationCount > 0 ? true : false;
+
     const userObj: any = user.toObject();
     delete userObj.password;
     delete userObj.resetPasswordExpire;
     delete userObj.resetPasswordOTP;
 
-    return successResponse(res, "Logged in successfully", {token, userObj})
+    return successResponse(res, "Logged in successfully", {token, userObj, pendingApplication});
  } catch (err: any) {
     return errorResponse(res, err.message, 500);
   }

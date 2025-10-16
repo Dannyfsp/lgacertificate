@@ -24,5 +24,10 @@ export const config = {
         NAME: process.env.CLOUDINARY_CLOUD_NAME,
         API_KEY: process.env.CLOUDINARY_API_KEY,
         API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    },
+    payments: {
+        URI: process.env.FLW_URI,
+        SECRET: process.env.FLW_SECRET,
+        KEY: process.env.FLW_KEY
     }
 }

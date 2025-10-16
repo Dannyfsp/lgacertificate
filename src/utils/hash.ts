@@ -8,3 +8,21 @@ export const hash = async (value: string): Promise<string> => {
 export const compareHash = (value: string, hash: string): Promise<boolean> => {
     return bcryptCompare(value, hash);
 }
+
+export const generateRandomString = (length: number): string => {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+export const generateTransactionRef = (): string => {
+  const currentDate = new Date();
+  const stringDate = currentDate.toISOString();
+  const formatString = stringDate.replace(/[-:.]/g, '');
+  const transactionRef = `TXN${generateRandomString(6)}${formatString}`;
+  return transactionRef;
+};

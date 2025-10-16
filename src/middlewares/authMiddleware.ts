@@ -28,27 +28,3 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
         errorResponse(res, "Unauthorized", 401);
     }
 }
-
-export const authOTPMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {        
-        const authHeader = req.headers.authotp as string;
-        if (!authHeader) {
-            return errorResponse(res, "Invalid request", 401);
-        }
-
-        const token = authHeader;
-
-        // Verify the token
-        const decoded: any = verifyToken(token);
-        if (decoded && decoded.otpType !== "FORGOT_PASSWORD") return errorResponse(res, "Unauthorized", 401);
-
-        // get user
-        const user = await User.findOne({email: decoded.email});
-        if (!user) return errorResponse(res, "Unauthorized", 401);
-        req.user = user;
-
-        next();
-    } catch (error) {
-        errorResponse(res, "Unauthorized", 401);
-    }
-}
