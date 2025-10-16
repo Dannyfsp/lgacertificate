@@ -11,7 +11,7 @@ cloudinary.config({
 
 export const uploadBase64ToCloudinary = async (
   base64String: string,
-  folder: string = 'tck_proj'
+  folder: string = 'lga_certificates_passports'
 ): Promise<string> => {
   try {
     // Validate the Base64 string and extract the format

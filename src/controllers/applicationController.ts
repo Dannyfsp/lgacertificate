@@ -7,7 +7,7 @@ import { restClientWithHeaders } from "../utils/apiCalls/restcall";
 import { IBaseResponse } from "../utils/apiCalls/IResponse";
 import { config } from "../config/app";
 import mongoose from "mongoose";
-import Transaction, { ITransaction } from "../models/transactionModel";
+import Transaction, { ITransaction, TransactionStatus } from "../models/transactionModel";
 import { AppError } from "../utils/appError";
 import { uploadBase64ToCloudinary } from "../utils/upload";
 
@@ -51,15 +51,13 @@ export const createApplication = async (req: AuthenticatedRequest, res: Response
           phone_number: user.phone,
         },
         customizations: {
-          title: 'Flutterwave Standard Payment',
+          title: 'LGA Certificate Payment',
         }
     };
 
     const response: IBaseResponse = await restClientWithHeaders('POST', `${config.payments.URI}payments`, paymentPayload, {
         Authorization: `Bearer ${config.payments.SECRET}`,
-    });
-
-    console.log(response);    
+    }); 
 
     if (response.status !== 'success') {
         await session.abortTransaction();
@@ -86,7 +84,6 @@ export const createApplication = async (req: AuthenticatedRequest, res: Response
     const transaction = new Transaction({
         transactionRef,
         amount: "10000",
-        transactionId: response?.data?.id,
         user: user._id,
         application: application._id
     })
@@ -149,29 +146,33 @@ export const verifyPayment = async (req: AuthenticatedRequest, res: Response) =>
     }
 
     if (response.data.status === 'pending') {
-        transaction.transactionId = transactionId as string;
+        transaction.transactionId = Number(transactionId);
         await transaction.save({ session });
         await session.commitTransaction();
         return errorResponse(res, 'transaction still pending', 400);
     }
     if (response.data.status !== 'successful') {
         transaction.status = 'failed';
-        transaction.transactionId = transactionId as string;
+        transaction.transactionId = Number(transactionId);
         await transaction.save({ session });
         await session.commitTransaction();
         return errorResponse(res, 'transaction failed', 400);
     }
 
-    transaction.status = 'successful';
+    transaction.status = TransactionStatus.SUCCESSFUL;
+    transaction.transactionId = Number(transactionId);
+    transaction.providerRef = response?.data?.flw_ref;
     await transaction.save({ session });
-
+    
     const application = await Application.findById(transaction.application);
     if (!application) {
-        await session.abortTransaction();
-        return errorResponse(res, 'application not found', 404);
+      await session.abortTransaction();
+      return errorResponse(res, 'application not found', 404);
     }
     application.isApproved = true;
     await application.save({ session });
+    
+    await session.commitTransaction();
     return successResponse(res,  "transaction successful", { application });
   } catch (err: any) {
     await session.abortTransaction();

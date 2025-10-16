@@ -2,6 +2,7 @@ import { Router } from "express";
 import { schemas, validate } from "./middlewares/validator";
 import { forgotPassword, login, resendOTP, resetPassword, signup } from "./controllers/authController";
 import { verifyPayment } from "./controllers/applicationController";
+import { authMiddleware } from "./middlewares/authMiddleware";
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.post("/auth/reset-password", validate(schemas.resetPasswordSchema), reset
 router.post("/auth/resend-otp", validate(schemas.forgotPasswordSchema), resendOTP);
 
 // Application Routers
-router.post("/applications", validate(schemas.createApplicationSchema), require("./controllers/applicationController").createApplication);
+router.post("/application", authMiddleware, validate(schemas.createApplicationSchema), require("./controllers/applicationController").createApplication);
 router.get("/payment/verify", verifyPayment);
 
 

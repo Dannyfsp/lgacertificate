@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-enum TransactionStatus {
+export enum TransactionStatus {
   SUCCESSFUL = 'successful',
   PENDING = 'pending',
   FAILED = 'failed',
@@ -9,7 +9,8 @@ enum TransactionStatus {
 export interface ITransaction extends Document {
   transactionRef: string;
   amount: string;
-  transactionId?: string;
+  transactionId?: number;
+  providerRef?: string;
   status?: string;
   user: Types.ObjectId; // reference to User model
   application: Types.ObjectId; // reference to Application model
@@ -19,7 +20,8 @@ const transactionSchema = new Schema<ITransaction>(
   {
     transactionRef: { type: String, required: true },
     amount: { type: String, required: true },
-    transactionId: { type: String, required: true },
+    transactionId: { type: Number },
+    providerRef: { type: String },
     status: { type: String, enum: Object.values(TransactionStatus), default: TransactionStatus.PENDING },
     user: {
       type: Schema.Types.ObjectId,

@@ -1,6 +1,6 @@
 export interface IBaseResponse {
   status: string;
-  success: boolean;
+  success?: boolean;
   data?: any;
   message?: string;
 }
