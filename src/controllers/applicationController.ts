@@ -173,7 +173,7 @@ export const verifyPayment = async (req: AuthenticatedRequest, res: Response) =>
     await application.save({ session });
     
     await session.commitTransaction();
-    return successResponse(res,  "transaction successful", { application });
+    return res.redirect(`${config.app.FRONT_END_URL}/successful?ref=${transactionRef}`);
   } catch (err: any) {
     await session.abortTransaction();
     return errorResponse(res, err.message, 500);
