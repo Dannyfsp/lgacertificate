@@ -7,9 +7,11 @@ import { restClientWithHeaders } from "../utils/apiCalls/restcall";
 import { IBaseResponse } from "../utils/apiCalls/IResponse";
 import { config } from "../config/app";
 import mongoose from "mongoose";
-import Transaction, { ITransaction, TransactionStatus } from "../models/transactionModel";
+import Transaction, { ITransaction, TransactionStatus, TransactionType } from "../models/transactionModel";
 import { AppError } from "../utils/appError";
 import { uploadBase64ToCloudinary } from "../utils/upload";
+import Certificate from "../models/certificationModal";
+import CertificateService from "../services/certificateService";
 
 export const createApplication = async (req: AuthenticatedRequest, res: Response) => {
     const session = await mongoose.startSession();
@@ -84,6 +86,7 @@ export const createApplication = async (req: AuthenticatedRequest, res: Response
     const transaction = new Transaction({
         transactionRef,
         amount: "10000",
+        transactionType: TransactionType.APPLICATION,
         user: user._id,
         application: application._id
     })
@@ -222,10 +225,10 @@ export const getRejectedApplications = async (req: AuthenticatedRequest, res: Re
 
 export const approveApplicationsByAdmin = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { applicationId } = req.params;
+    const id = req.params.id;
     const approve = req.query.approve;
 
-    const application = await Application.findById(applicationId);
+    const application = await Application.findById(id);
     if (!application) {
       return errorResponse(res, "application not found", 404);
     }
@@ -240,6 +243,15 @@ export const approveApplicationsByAdmin = async (req: AuthenticatedRequest, res:
       application.isRejected = true;
     }
     await application.save();
+
+    const certificateRef = await CertificateService.certificateReference(); 
+
+    await Certificate.create({
+        certificateRef,
+        application: application._id,
+        user: application.user,
+    });
+
     return successResponse(res, "application approved successfully", { application });
   } catch (err: any) {
     return errorResponse(res, err.message, 500);

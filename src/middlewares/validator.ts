@@ -59,6 +59,11 @@ const schemas = {
   forgotPasswordSchema: Joi.object().keys({
     email: Joi.string().email().required(),
   }),
+  
+  verifyUserEmailSchema: Joi.object().keys({
+    email: Joi.string().email().required(),
+    otp: Joi.string().length(6).required(),
+  }),
 
   resetPasswordSchema: Joi.object().keys({
     email: Joi.string().email().required(),

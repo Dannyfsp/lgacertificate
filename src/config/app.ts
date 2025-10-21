@@ -13,6 +13,7 @@ export const config = {
         ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
         ADMIN_SECRET: process.env.ADMIN_SECRET,
         FRONT_END_URL: process.env.FRONT_END_URL,
+        CERTIFICATE_AMOUNT: 10000,
     },
     mail: {
         HOST: process.env.SMTP_HOST,

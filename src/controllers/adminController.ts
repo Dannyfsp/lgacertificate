@@ -3,7 +3,6 @@ import { errorResponse, successResponse } from "../utils/responseUtils";
 import { compareHash, generateRandomPassword, hash } from "../utils/hash";
 import { generateToken } from "../utils/jwtHandler";
 import emitter from "../utils/common/eventlisteners";
-import Application from "../models/applicationModel";
 import Admin from "../models/adminModel";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 

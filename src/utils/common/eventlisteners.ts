@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import { sendEmail } from './emailSender';
 import { forgotPasswordTemp } from '../templates/forgotPasswordTemp';
 import { createAdminTemp } from '../templates/createAdminTemp';
+import { verifyEmailTemp } from '../templates/verifyEmailTemp';
 
 const emitter = new EventEmitter();
 
@@ -10,6 +11,14 @@ emitter.on('forgot-password', async (data: { email: string; otp: string; name: s
     email: data.email,
     subject: 'Forgot Password',
     message: await forgotPasswordTemp(data.email, data.otp, data.name),
+  });
+});
+
+emitter.on('verify-email', async (data: { email: string; otp: string; name: string }) => {
+  await sendEmail({
+    email: data.email,
+    subject: 'Forgot Password',
+    message: await verifyEmailTemp(data.otp, data.name),
   });
 });
 
