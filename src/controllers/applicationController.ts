@@ -169,7 +169,8 @@ export const verifyPayment = async (req: AuthenticatedRequest, res: Response) =>
       await session.abortTransaction();
       return errorResponse(res, 'application not found', 404);
     }
-    application.isApproved = true;
+    application.isPendingPayment = false;
+    application.isPendingApproval = true;
     await application.save({ session });
     
     await session.commitTransaction();
@@ -194,7 +195,7 @@ export const getUserApplications = async (req: AuthenticatedRequest, res: Respon
 
 export const getPendingApplications = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const applications = await Application.find({ isApproved: false }).sort({ createdAt: -1 });
+    const applications = await Application.find({ isApproved: false, isRejected: false, isPendingApproval: true }).sort({ createdAt: -1 });
     return successResponse(res,  "pending application retrieved successfully", { applications });
   } catch (err: any) {
     return errorResponse(res, err.message, 500);
@@ -203,8 +204,17 @@ export const getPendingApplications = async (req: AuthenticatedRequest, res: Res
 
 export const getApprovedApplications = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const applications = await Application.find({ isApproved: false }).sort({ createdAt: -1 });
-    return successResponse(res,  "pending application retrieved successfully", { applications });
+    const applications = await Application.find({ isApproved: true }).sort({ createdAt: -1 });
+    return successResponse(res,  "approved application retrieved successfully", { applications });
+  } catch (err: any) {
+    return errorResponse(res, err.message, 500);
+  }
+};
+
+export const getRejectedApplications = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const applications = await Application.find({ isRejected: true }).sort({ createdAt: -1 });
+    return successResponse(res,  "rejected application retrieved successfully", { applications });
   } catch (err: any) {
     return errorResponse(res, err.message, 500);
   }
@@ -219,10 +229,15 @@ export const approveApplicationsByAdmin = async (req: AuthenticatedRequest, res:
     if (!application) {
       return errorResponse(res, "application not found", 404);
     }
+
+    if (application.isApproved) return errorResponse(res, "application already approved", 400);
+    if (application.isRejected) return errorResponse(res, "application already rejected", 400);
+    if (application.isPendingPayment) return errorResponse(res, "application payment not yet completed", 400);
+
     if (approve === 'true') {    
-    application.isApproved = true;
+      application.isApproved = true;
     } else {
-      application.isApproved = false;
+      application.isRejected = true;
     }
     await application.save();
     return successResponse(res, "application approved successfully", { application });

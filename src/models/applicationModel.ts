@@ -13,7 +13,9 @@ export interface IApplication extends Document {
   currentAddress: string;
   lga: string;
   isApproved: boolean;
-  isPending: boolean;
+  isRejected: boolean;
+  isPendingPayment: boolean;
+  isPendingApproval: boolean;
   user: Types.ObjectId; // reference to User model
 }
 
@@ -31,7 +33,9 @@ const applicationSchema = new Schema<IApplication>(
     currentAddress: { type: String, required: true },
     lga: { type: String, required: true },
     isApproved: { type: Boolean, default: false },
-    isPending: { type: Boolean, default: false },
+    isRejected: { type: Boolean, default: false },
+    isPendingPayment: { type: Boolean, default: true },
+    isPendingApproval: { type: Boolean, default: false },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

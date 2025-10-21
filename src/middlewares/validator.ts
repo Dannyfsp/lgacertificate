@@ -71,6 +71,28 @@ const schemas = {
         'any.only': 'Password and Confirm Password do not match',
       }),
   }),
+
+  createAdminSchema: Joi.object().keys({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    position: Joi.string().email().required(),
+    staffID: Joi.string().email().required(),
+    lga: Joi.string().email().required(),
+    phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
+  }),
+
+  changePasswordSchema: Joi.object().keys({
+    oldPassword: Joi.string().min(6).required(),
+    newPassword: Joi.string().min(6).required(),
+    confirmNewPassword: Joi.string()
+        .valid(Joi.ref('newPassword'))
+        .required()
+        .messages({
+        'any.only': 'Confirm password does not match password',
+        }),
+  }),
+
 };
 
 export { validate, schemas };

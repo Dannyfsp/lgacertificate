@@ -10,10 +10,13 @@ export interface IAdmin extends Document {
   lastName: string;
   email: string;
   phone?: string;
+  position?: string;
   password: string;
   resetPasswordOTP?: string | null | undefined;
   resetPasswordExpire?: Date | null | undefined;
   role: string;
+  lga?: string;
+  staffID?: string;
 }
 
 const adminSchema = new Schema<IAdmin>({
@@ -23,6 +26,9 @@ const adminSchema = new Schema<IAdmin>({
   phone: { type: String },
   role: { type: String, enum: Object.values(AdminRole), default: AdminRole.ADMIN },
   password: { type: String, required: true },
+  lga: { type: String },
+  position: { type: String },
+  staffID: { type: String },
   resetPasswordOTP: {type: String},
   resetPasswordExpire: {type: Date},
 }, { timestamps: true });

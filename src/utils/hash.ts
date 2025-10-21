@@ -26,3 +26,7 @@ export const generateTransactionRef = (): string => {
   const transactionRef = `TXN${generateRandomString(6)}${formatString}`;
   return transactionRef;
 };
+
+export const generateRandomPassword = (): string => {
+  return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
+}

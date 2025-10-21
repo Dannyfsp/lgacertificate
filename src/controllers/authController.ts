@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = generateToken({id: user._id, email: user.email});
 
-    const pendingApplicationCount = await Application.countDocuments({user: user._id, isPending: true});
+    const pendingApplicationCount = await Application.countDocuments({user: user._id, isPendingPayment: true});
     const pendingApplication = pendingApplicationCount > 0 ? true : false;
 
     const userObj: any = user.toObject();
