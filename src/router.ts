@@ -27,6 +27,10 @@ router.post("/admin/signup", superAdminAuthMiddleware, validate(schemas.createAd
 
 // Admin Routers
 router.post("/admin/login", adminAuthMiddleware, validate(schemas.loginUserSchema), AdminController.login);
+router.post("/admin/change-password", adminAuthMiddleware, validate(schemas.changePasswordSchema), AdminController.changePassword);
+router.post("/admin/forgot-password", validate(schemas.forgotPasswordSchema), AdminController.forgotPassword);
+router.post("/admin/reset-password", validate(schemas.resetPasswordSchema), AdminController.resetPassword);
+router.post("/admin/resend-otp", validate(schemas.resetPasswordSchema), AdminController.resendOTP);
 router.post("/admin/application/:id", adminAuthMiddleware, ApplicationController. approveApplicationsByAdmin);
 router.get("/admin/applications/pending", adminAuthMiddleware, ApplicationController.getPendingApplications);
 router.get("/admin/applications/approved", adminAuthMiddleware, ApplicationController.getApprovedApplications);
