@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ICertificate extends Document {
   certificateRef: string;
-  verificationCode?: string;
+  verificationCode?: string | null | undefined;
   isVerificationCodeGenerated?: boolean;
   isVerificationPaymentPending?: boolean;
   user: Types.ObjectId; // reference to User model
