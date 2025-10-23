@@ -11,8 +11,8 @@ const AdminController = {
     try {
       const { firstName, lastName, email, position, staffID, lga, phone } = req.body;
 
-      const existingUser = await Admin.findOne({ email });
-      if (existingUser) return errorResponse(res, 'Official already registered', 400);
+      const existingAdmin = await Admin.findOne({ email });
+      if (existingAdmin) return errorResponse(res, 'Official already registered', 400);
 
       const password = generateRandomPassword();
       const hashedPassword = await hash(password);
@@ -32,7 +32,7 @@ const AdminController = {
         email: email,
         name: `${firstName} ${lastName}`,
         password: password,
-      });
+      });      
 
       return successResponse(res, 'Invitation Email sent to admin successfully', {
         adminId: admin._id,
@@ -187,14 +187,15 @@ const AdminController = {
 
   changePassword: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const admin = req.user;
-      const { oldPassword, newPassword } = req.body;
+      const admin = req.user;      
+      const { oldPassword, newPassword } = req.body;      
 
       // Check if old password match
-      const isMatch = await compareHash(oldPassword, admin.passport);
+      const isMatch = await compareHash(oldPassword, admin.password);      
       if (!isMatch) return errorResponse(res, 'Old password does not match', 400);
 
       const hashedPassword = await hash(newPassword);
+      
       admin.password = hashedPassword;
       await admin.save();
 

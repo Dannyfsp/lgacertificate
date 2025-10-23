@@ -26,7 +26,7 @@ router.get("/application/payment/verify", ApplicationController.verifyPayment);
 router.post("/admin/signup", superAdminAuthMiddleware, validate(schemas.createAdminSchema), AdminController.signup);
 
 // Admin Routers
-router.post("/admin/login", adminAuthMiddleware, validate(schemas.loginUserSchema), AdminController.login);
+router.post("/admin/login", validate(schemas.loginUserSchema), AdminController.login);
 router.post("/admin/change-password", adminAuthMiddleware, validate(schemas.changePasswordSchema), AdminController.changePassword);
 router.post("/admin/forgot-password", validate(schemas.forgotPasswordSchema), AdminController.forgotPassword);
 router.post("/admin/reset-password", validate(schemas.resetPasswordSchema), AdminController.resetPassword);

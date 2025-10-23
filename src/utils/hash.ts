@@ -27,8 +27,13 @@ export const generateTransactionRef = (): string => {
   return transactionRef;
 };
 
-export const generateRandomPassword = (): string => {
-  return Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
+export const generateRandomPassword = (length: number = 8): string => {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return result;
 }
 
 export const generateCertificateRef = (length: number): string => {

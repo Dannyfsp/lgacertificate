@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import connectDB from './config/database';
 import router from './router';
+import UtilServices from './services/utilService';
 
 const app: Express = express();
 
@@ -22,5 +23,12 @@ app.use((req: Request, res: Response) => {
 
 const port: number = Number(process.env.PORT);
 
-
-app.listen(port, () => console.log(`Server running on port ${port}`));
+(async () => {
+    try {
+        await UtilServices.superSignup();
+        app.listen(port, () => console.log(`Server running on port ${port}`));
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+})();

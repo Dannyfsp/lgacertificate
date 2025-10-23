@@ -257,8 +257,10 @@ const ApplicationController = {
 
       if (approve === 'true') {
         application.isApproved = true;
+        application.isPendingApproval = false;
       } else {
         application.isRejected = true;
+        application.isPendingApproval = false;
       }
       await application.save();
 

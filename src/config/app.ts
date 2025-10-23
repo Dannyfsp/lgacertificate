@@ -14,6 +14,9 @@ export const config = {
         ADMIN_SECRET: process.env.ADMIN_SECRET,
         FRONT_END_URL: process.env.FRONT_END_URL,
         CERTIFICATE_AMOUNT: 10000,
+        ADMIN_EMAIL: process.env.APP_ADMIN_EMAIL,
+        ADMIN_PASS: process.env.APP_ADMIN_PASSWORD,
+        ADMIN_NAME: process.env.APP_ADMIN_NAME,
     },
     mail: {
         HOST: process.env.SMTP_HOST,

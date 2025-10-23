@@ -183,8 +183,9 @@ const CertificateController = {
 
       if (!certificate.verificationCode) return errorResponse(res, 'Certificate not verified', 400);
 
-      if (certificate.verificationCode.trim() !== verificationCode.trim())
-        return errorResponse(res, 'Certificate not verified', 400);
+      const certVerificationCode = certificate.verificationCode?.split('-')[1]
+  
+      if (verificationCode !== certVerificationCode) return errorResponse(res, 'Certificate not verified', 400);
 
       return successResponse(res, 'Certificate verified', { ref: certificateRef });
     } catch (err: any) {

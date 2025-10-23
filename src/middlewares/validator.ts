@@ -37,6 +37,19 @@ const schemas = {
         }),
   }),
   
+  superSignupSchema: Joi.object().keys({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string()
+        .valid(Joi.ref('password'))
+        .required()
+        .messages({
+        'any.only': 'Confirm password does not match password',
+        }),
+  }),
+  
   createApplicationSchema: Joi.object().keys({
     fullNames: Joi.string().required(),
     fatherNames: Joi.string().required(),
@@ -81,9 +94,9 @@ const schemas = {
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     email: Joi.string().email().required(),
-    position: Joi.string().email().required(),
-    staffID: Joi.string().email().required(),
-    lga: Joi.string().email().required(),
+    position: Joi.string().required(),
+    staffID: Joi.string().required(),
+    lga: Joi.string().required(),
     phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
   }),
 
