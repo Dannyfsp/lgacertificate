@@ -68,8 +68,7 @@ export const verifyEmailTemp = async (otp: string, name: string) => {
   <body>
     <div class="container">
       <header>
-        <img style="width: '40%'; height: '40%';" src="https://res.cloudinary.com/dfdttm7jv/image/upload/v1743956614/sayswitchlogo_fjkacq_svqlrj.png" alt="logo">
-        <h1>Forgot Password</h1>
+        <h1>Email Verification</h1>
       </header>
       <main>
         <h2>Hi ${name},</h2>
