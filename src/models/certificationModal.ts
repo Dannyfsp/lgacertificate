@@ -5,6 +5,7 @@ export interface ICertificate extends Document {
   verificationCode?: string | null | undefined;
   isVerificationCodeGenerated?: boolean;
   isVerificationPaymentPending?: boolean;
+  pendingPaymentLink: string | null;
   user: Types.ObjectId; // reference to User model
   application: Types.ObjectId; // reference to Application model
 }
@@ -15,6 +16,7 @@ const certificateSchema = new Schema<ICertificate>(
     verificationCode: { type: String },
     isVerificationCodeGenerated: { type: Boolean, default: false },
     isVerificationPaymentPending: { type: Boolean, default: false },
+    pendingPaymentLink: { type: String },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

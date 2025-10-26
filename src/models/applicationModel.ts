@@ -9,6 +9,7 @@ export interface IApplication extends Document {
   nativePoliticalWard: string;
   village: string;
   communityHead: string;
+  communityHeadContact: string;
   passport: string;
   currentAddress: string;
   lga: string;
@@ -16,6 +17,7 @@ export interface IApplication extends Document {
   isRejected: boolean;
   isPendingPayment: boolean;
   isPendingApproval: boolean;
+  pendingPaymentLink: string | null;
   user: Types.ObjectId; // reference to User model
 }
 
@@ -29,12 +31,14 @@ const applicationSchema = new Schema<IApplication>(
     nativePoliticalWard: { type: String, required: true },
     village: { type: String, required: true },
     communityHead: { type: String, required: true },
+    communityHeadContact: { type: String, required: true },
     passport: { type: String, required: true },
     currentAddress: { type: String, required: true },
     lga: { type: String, required: true },
     isApproved: { type: Boolean, default: false },
     isRejected: { type: Boolean, default: false },
     isPendingPayment: { type: Boolean, default: true },
+    pendingPaymentLink: { type: String },
     isPendingApproval: { type: Boolean, default: false },
     user: {
       type: Schema.Types.ObjectId,

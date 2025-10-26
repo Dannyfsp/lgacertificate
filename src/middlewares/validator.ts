@@ -57,6 +57,7 @@ const schemas = {
     nativeTown: Joi.string().required(),
     nativePoliticalWard: Joi.string().required(),
     communityHead: Joi.string().required(),
+    communityHeadContact: Joi.string().required(),
     village: Joi.string().required(),
     nin: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
     passport: Joi.string().required(),

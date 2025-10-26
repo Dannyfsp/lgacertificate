@@ -63,6 +63,7 @@ const CertificateController = {
       }
 
       certificate.isVerificationPaymentPending = true;
+      certificate.pendingPaymentLink = response?.data?.link;
       await certificate.save({ session });
 
       const transaction = new Transaction({
@@ -157,6 +158,7 @@ const CertificateController = {
       certificate.isVerificationPaymentPending = false;
       certificate.isVerificationCodeGenerated = true;
       certificate.verificationCode = `${certificate.certificateRef}-${generateRandomString(7)}`;
+      certificate.pendingPaymentLink = null;
       await certificate.save({ session });
 
       await session.commitTransaction();

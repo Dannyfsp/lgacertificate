@@ -16,6 +16,8 @@ import { AppError } from '../utils/appError';
 import { uploadBase64ToCloudinary } from '../utils/upload';
 import Certificate from '../models/certificationModal';
 import CertificateService from '../services/certificateService';
+import emitter from '../utils/common/eventlisteners';
+import User from '../models/userModel';
 
 const ApplicationController = {
   createApplication: async (req: AuthenticatedRequest, res: Response) => {
@@ -89,6 +91,7 @@ const ApplicationController = {
         nin,
         passport: passportUrl,
         user: user._id,
+        pendingPaymentLink: response?.data?.link,
       });
 
       await application.save({ session });
@@ -187,7 +190,16 @@ const ApplicationController = {
       }
       application.isPendingPayment = false;
       application.isPendingApproval = true;
+      application.pendingPaymentLink = null;
       await application.save({ session });
+
+      const user = await User.findById(application.user);
+      if (!user) return errorResponse(res, 'user not found', 400)
+
+      emitter.emit('application-awaiting-approval', {
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+      });
 
       await session.commitTransaction();
       return res.redirect(`${config.app.FRONT_END_URL}/successful?ref=${transactionRef}`);
@@ -270,6 +282,14 @@ const ApplicationController = {
         certificateRef,
         application: application._id,
         user: application.user,
+      });
+
+      const user = await User.findById(application.user);
+      if (!user) return errorResponse(res, 'user not found', 400)
+
+      emitter.emit('application-approved', {
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
       });
 
       return successResponse(res, 'application approved successfully', { application });
