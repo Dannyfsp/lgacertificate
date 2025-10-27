@@ -33,6 +33,7 @@ const ApplicationController = {
         nativePoliticalWard,
         village,
         communityHead,
+        communityHeadContact,
         currentAddress,
         lga,
         nin,
@@ -86,6 +87,7 @@ const ApplicationController = {
         nativePoliticalWard,
         village,
         communityHead,
+        communityHeadContact,
         currentAddress,
         lga,
         nin,
@@ -264,15 +266,27 @@ const ApplicationController = {
 
       if (application.isApproved) return errorResponse(res, 'application already approved', 400);
       if (application.isRejected) return errorResponse(res, 'application already rejected', 400);
-      if (application.isPendingPayment)
-        return errorResponse(res, 'application payment not yet completed', 400);
+      if (application.isPendingPayment) return errorResponse(res, 'application payment not yet completed', 400);
+
+      const user = await User.findById(application.user);
+      if (!user) return errorResponse(res, 'user not found', 400);
 
       if (approve === 'true') {
         application.isApproved = true;
         application.isPendingApproval = false;
+
+        emitter.emit('application-approved', {
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        });
       } else {
         application.isRejected = true;
         application.isPendingApproval = false;
+
+        emitter.emit('application-rejected', {
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+        });
       }
       await application.save();
 
@@ -282,14 +296,6 @@ const ApplicationController = {
         certificateRef,
         application: application._id,
         user: application.user,
-      });
-
-      const user = await User.findById(application.user);
-      if (!user) return errorResponse(res, 'user not found', 400)
-
-      emitter.emit('application-approved', {
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`,
       });
 
       return successResponse(res, 'application approved successfully', { application });

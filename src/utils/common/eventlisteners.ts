@@ -4,6 +4,8 @@ import { forgotPasswordTemp } from '../templates/forgotPasswordTemp';
 import { createAdminTemp } from '../templates/createAdminTemp';
 import { verifyEmailTemp } from '../templates/verifyEmailTemp';
 import { successfulApplicationTemp } from '../templates/successfulApplicationTemp';
+import { applicationApprovedTemp } from '../templates/applicationApprovedTemp';
+import { applicationRejectedTemp } from '../templates/applicationRejectedTemp';
 
 const emitter = new EventEmitter();
 
@@ -43,7 +45,15 @@ emitter.on('application-approved', async (data: { email: string; name: string })
   await sendEmail({
     email: data.email,
     subject: 'Application Approved',
-    message: await successfulApplicationTemp(data.name),
+    message: await applicationApprovedTemp(data.name),
+  });
+});
+
+emitter.on('application-rejected', async (data: { email: string; name: string }) => {
+  await sendEmail({
+    email: data.email,
+    subject: 'Application Rejected',
+    message: await applicationRejectedTemp(data.name),
   });
 });
 
