@@ -201,6 +201,7 @@ const ApplicationController = {
       emitter.emit('application-awaiting-approval', {
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
+        applicationId: application._id,
       });
 
       await session.commitTransaction();
@@ -278,6 +279,7 @@ const ApplicationController = {
         emitter.emit('application-approved', {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
+          applicationId: application._id,
         });
       } else {
         application.isRejected = true;
@@ -286,6 +288,7 @@ const ApplicationController = {
         emitter.emit('application-rejected', {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
+          applicationId: application._id,
         });
       }
       await application.save();

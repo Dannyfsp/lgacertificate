@@ -33,27 +33,27 @@ emitter.on('send-admin-invitation', async (data: { email: string; name: string, 
   });
 });
 
-emitter.on('application-awaiting-approval', async (data: { email: string; name: string }) => {
+emitter.on('application-awaiting-approval', async (data: { email: string; name: string, applicationID: string }) => {
   await sendEmail({
     email: data.email,
     subject: 'Application Awaiting Approval',
-    message: await successfulApplicationTemp(data.name),
+    message: await successfulApplicationTemp(data.name, data.applicationID),
   });
 });
 
-emitter.on('application-approved', async (data: { email: string; name: string }) => {
+emitter.on('application-approved', async (data: { email: string; name: string, applicationID: string }) => {
   await sendEmail({
     email: data.email,
     subject: 'Application Approved',
-    message: await applicationApprovedTemp(data.name),
+    message: await applicationApprovedTemp(data.name, data.applicationID),
   });
 });
 
-emitter.on('application-rejected', async (data: { email: string; name: string }) => {
+emitter.on('application-rejected', async (data: { email: string; name: string, applicationID: string }) => {
   await sendEmail({
     email: data.email,
     subject: 'Application Rejected',
-    message: await applicationRejectedTemp(data.name),
+    message: await applicationRejectedTemp(data.name, data.applicationID),
   });
 });
 
