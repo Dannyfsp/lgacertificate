@@ -276,6 +276,14 @@ const ApplicationController = {
         application.isApproved = true;
         application.isPendingApproval = false;
 
+        const certificateRef = await CertificateService.certificateReference();
+
+        await Certificate.create({
+          certificateRef,
+          application: application._id,
+          user: application.user,
+        });
+
         emitter.emit('application-approved', {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
@@ -292,14 +300,6 @@ const ApplicationController = {
         });
       }
       await application.save();
-
-      const certificateRef = await CertificateService.certificateReference();
-
-      await Certificate.create({
-        certificateRef,
-        application: application._id,
-        user: application.user,
-      });
 
       return successResponse(res, 'application approved successfully', { application });
     } catch (err: any) {
