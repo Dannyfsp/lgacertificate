@@ -41,6 +41,7 @@ router.post("/certificate/request-verification/:id", authMiddleware, Certificate
 router.get("/certificate/payment/verify", CertificateController.verifyCertificateVerificationCodePayment);
 router.get("/certificate/verify/:ref", CertificateController.confirmVerificationCode);
 router.delete("/certificate/nullify-verification/:ref", CertificateController.nullifyVerificationCode);
+// router.get("/certificate/download/:id", authMiddleware, CertificateController.downloadCertificate);
 
 
 export default router;

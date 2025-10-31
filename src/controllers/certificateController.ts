@@ -12,6 +12,8 @@ import Transaction, {
   TransactionStatus,
   TransactionType,
 } from '../models/transactionModel';
+import { generateCertificatePDF } from '../services/pdfCertificateService';
+import Application from '../models/applicationModel';
 
 const CertificateController = {
   requestVerificationCode: async (req: AuthenticatedRequest, res: Response) => {
@@ -212,6 +214,44 @@ const CertificateController = {
       return errorResponse(res, err.message, 500);
     }
   },
+
+  downloadCertificate: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const applicationId = req.params.id;
+      const user = req.user;
+
+      const application = await Application.findById(applicationId).populate('user');
+      
+      if (!application) {
+        return errorResponse(res, 'Application not found', 404);
+      }
+
+      if (!application.isApproved) {
+        return errorResponse(res, 'Application is not approved yet', 400);
+      }
+
+      const signatureImages = {
+        userPassport: application.passport,
+        secretarySignature: application.passport,
+        chairmanSignature: application.passport
+      };
+
+      const pdfBuffer = await generateCertificatePDF(
+        application as any, 
+        signatureImages
+      );
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="certificate-${application.nin}.pdf"`);
+      
+      res.send(pdfBuffer);
+
+    } catch (err: any) {
+      console.error('Certificate generation error:', err);
+      return errorResponse(res, err.message, 500);
+    }
+  },
+
 };
 
 export default CertificateController;
