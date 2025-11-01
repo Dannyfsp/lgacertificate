@@ -78,7 +78,7 @@ export const applicationApprovedTemp = async (name: string, applicationId: strin
                                                       <strong>Approval Time:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right;">
-                                                      ${new Date().toLocaleDateString("en-US", {hour: "numeric", minute: "numeric", hour12: true, })}
+                                                      ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "numeric", hour12: true, })}
                                                   </td>
                                               </tr>
                                               <tr>
