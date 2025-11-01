@@ -14,6 +14,8 @@ import Transaction, {
 } from '../models/transactionModel';
 import { generateCertificatePDF } from '../services/pdfCertificateService';
 import Application from '../models/applicationModel';
+import User from '../models/userModel';
+import emitter from '../utils/common/eventlisteners';
 
 const CertificateController = {
   requestVerificationCode: async (req: AuthenticatedRequest, res: Response) => {
@@ -162,8 +164,17 @@ const CertificateController = {
       certificate.verificationCode = `${certificate.certificateRef}-${generateRandomString(7)}`;
       certificate.pendingPaymentLink = null;
       await certificate.save({ session });
-
       await session.commitTransaction();
+
+      const user = await User.findById(certificate.user);
+      if (!user) return errorResponse(res, 'User not found', 404);
+
+      emitter.emit('certificate-verification', {
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        verificationCode: certificate.verificationCode,
+      });
+
       return res.redirect(`${config.app.FRONT_END_URL}/successful?ref=${transactionRef}`);
     } catch (err: any) {
       await session.abortTransaction();

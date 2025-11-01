@@ -6,6 +6,7 @@ import { verifyEmailTemp } from '../templates/verifyEmailTemp';
 import { successfulApplicationTemp } from '../templates/successfulApplicationTemp';
 import { applicationApprovedTemp } from '../templates/applicationApprovedTemp';
 import { applicationRejectedTemp } from '../templates/applicationRejectedTemp';
+import { certificateVerificationCodeTemp } from '../templates/certificateVerificationCodeTemp';
 
 const emitter = new EventEmitter();
 
@@ -33,7 +34,7 @@ emitter.on('send-admin-invitation', async (data: { email: string; name: string, 
   });
 });
 
-emitter.on('application-awaiting-approval', async (data: { email: string; name: string, applicationID: string }) => {
+emitter.on('application-awaiting-approval', async (data: { email: string; name: string, applicationID: string }) => {  
   await sendEmail({
     email: data.email,
     subject: 'Application Awaiting Approval',
@@ -54,6 +55,14 @@ emitter.on('application-rejected', async (data: { email: string; name: string, a
     email: data.email,
     subject: 'Application Rejected',
     message: await applicationRejectedTemp(data.name, data.applicationID),
+  });
+});
+
+emitter.on('certificate-verification-code', async (data: { email: string; name: string, verificationCode: string }) => {
+  await sendEmail({
+    email: data.email,
+    subject: 'Cerificate Verification Code Generated',
+    message: await certificateVerificationCodeTemp(data.name, data.verificationCode),
   });
 });
 

@@ -75,6 +75,14 @@ export const successfulApplicationTemp = async (name: string, applicationId: str
                                               </tr>
                                               <tr>
                                                   <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                                                      <strong>Submission Time:</strong>
+                                                  </td>
+                                                  <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right;">
+                                                      ${new Date().toLocaleDateString("en-US", {hour: "numeric", minute: "numeric", hour12: true, })}
+                                                  </td>
+                                              </tr>
+                                              <tr>
+                                                  <td style="padding: 8px 0; color: #666666; font-size: 14px;">
                                                       <strong>Status:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; text-align: right;">

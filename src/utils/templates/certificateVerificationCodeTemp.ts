@@ -1,11 +1,11 @@
-export const applicationRejectedTemp = async (name: string, applicationId: string) => {
+export const certificateVerificationCodeTemp = async (name: string, verificationCode: string) => {
   const html = `
   <!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Application Rejected</title>
+      <title>Certificate Verification Code Generated</title>
   </head>
   <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
       <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -17,7 +17,7 @@ export const applicationRejectedTemp = async (name: string, applicationId: strin
                       <tr>
                           <td style="background: linear-gradient(135deg, #1a7f3e 0%, #0d5f2e 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0; border-top: 4px solid #d4af37;">
                               <img src="cid:ogun_logo" alt="Ogun State Logo" style="width: 80px; height: 80px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
-                              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Application Rejected!</h1>
+                              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Certificate Verification Code Generated!</h1>
                               <p style="margin: 10px 0 0; color: #d4af37; font-size: 14px; font-weight: 500;">Ogun State Government</p>
                           </td>
                       </tr>
@@ -34,14 +34,14 @@ export const applicationRejectedTemp = async (name: string, applicationId: strin
                       <!-- Main Content -->
                       <tr>
                           <td style="padding: 0 30px 30px;">
-                              <h2 style="color: #1a7f3e; font-size: 24px; margin: 0 0 20px; text-align: center;">Your Application Has Been Rejected</h2>
+                              <h2 style="color: #1a7f3e; font-size: 24px; margin: 0 0 20px; text-align: center;">Your Application Has Been Received</h2>
                               
                               <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
                                   Dear <strong>${name}</strong>,
                               </p>
                               
                               <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                  Your application for <strong>LGA Certificate</strong> has been rejected and status has been changed to rejected, you can check on your dashboard.
+                                  This is to notify you that your certificate verification code for <strong>LGA Certificate</strong> has been generate successfully.
                               </p>
                               
                               <!-- Application Details Box -->
@@ -51,10 +51,10 @@ export const applicationRejectedTemp = async (name: string, applicationId: strin
                                           <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                               <tr>
                                                   <td style="padding: 8px 0; color: #666666; font-size: 14px;">
-                                                      <strong>Application ID:</strong>
+                                                      <strong>Certificate Verification Code:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; color: #1a7f3e; font-size: 14px; text-align: right; font-weight: 600;">
-                                                      ${applicationId}
+                                                      ${verificationCode}
                                                   </td>
                                               </tr>
                                               <tr>
@@ -67,7 +67,7 @@ export const applicationRejectedTemp = async (name: string, applicationId: strin
                                               </tr>
                                               <tr>
                                                   <td style="padding: 8px 0; color: #666666; font-size: 14px;">
-                                                      <strong>Rejection Date:</strong>
+                                                      <strong>Creation Date:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right;">
                                                       ${new Date().toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric", })}
@@ -75,48 +75,20 @@ export const applicationRejectedTemp = async (name: string, applicationId: strin
                                               </tr>
                                               <tr>
                                                   <td style="padding: 8px 0; color: #666666; font-size: 14px;">
-                                                      <strong>Rejection Time:</strong>
+                                                      <strong>Creation Time:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right;">
                                                       ${new Date().toLocaleDateString("en-US", {hour: "numeric", minute: "numeric", hour12: true, })}
-                                                  </td>
-                                              </tr>
-                                              <tr>
-                                                  <td style="padding: 8px 0; color: #666666; font-size: 14px;">
-                                                      <strong>Status:</strong>
-                                                  </td>
-                                                  <td style="padding: 8px 0; text-align: right;">
-                                                      <span style="display: inline-block; padding: 4px 12px; background-color: #fff4d4; color: #856404; border-radius: 12px; font-size: 13px; font-weight: 600;">Rejected</span>
                                                   </td>
                                               </tr>
                                           </table>
                                       </td>
                                   </tr>
                               </table>
-                              
-                              <!-- What's Next Section -->
-                              <table role="presentation" style="width: 100%; background-color: #f0f8f4; border-left: 4px solid #1a7f3e; border-radius: 4px; border-collapse: collapse; margin: 25px 0;">
-                                  <tr>
-                                      <td style="padding: 20px;">
-                                          <h3 style="color: #1a7f3e; font-size: 16px; margin: 0 0 10px;">📋 What Happens Next?</h3>
-                                          <p style="color: #0d5f2e; font-size: 14px; line-height: 1.6; margin: 0;">
-                                              Our team has finished reviewing your application. You can login to your dashboard and check reason for rejection.
-                                          </p>
-                                      </td>
-                                  </tr>
-                              </table>
-                              
-                              <!-- Call to Action Button -->
-                              <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 30px 0;">
-                                  <tr>
-                                      <td style="text-align: center;">
-                                          <a href="{{trackingLink}}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #1a7f3e 0%, #0d5f2e 100%); color: #ffffff; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: 600; border: 2px solid #d4af37;">Track Application Status</a>
-                                      </td>
-                                  </tr>
-                              </table>
+                            
                               
                               <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 20px 0 0;">
-                                  Please keep your Application ID safe for future reference. If you have any questions about your application, feel free to contact our support team.
+                                  Please note that this your certification verification code: ${verificationCode} can only be used once.
                               </p>
                           </td>
                       </tr>

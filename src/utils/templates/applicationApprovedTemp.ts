@@ -75,10 +75,18 @@ export const applicationApprovedTemp = async (name: string, applicationId: strin
                                               </tr>
                                               <tr>
                                                   <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                                                      <strong>Approval Time:</strong>
+                                                  </td>
+                                                  <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right;">
+                                                      ${new Date().toLocaleDateString("en-US", {hour: "numeric", minute: "numeric", hour12: true, })}
+                                                  </td>
+                                              </tr>
+                                              <tr>
+                                                  <td style="padding: 8px 0; color: #666666; font-size: 14px;">
                                                       <strong>Status:</strong>
                                                   </td>
                                                   <td style="padding: 8px 0; text-align: right;">
-                                                      <span style="display: inline-block; padding: 4px 12px; background-color: #1a7f3e; color: #856404; border-radius: 12px; font-size: 13px; font-weight: 600;">Approved</span>
+                                                      <span style="display: inline-block; padding: 4px 12px; background-color: #1a7f3e; color: #FFF; border-radius: 12px; font-size: 13px; font-weight: 600;">Approved</span>
                                                   </td>
                                               </tr>
                                           </table>

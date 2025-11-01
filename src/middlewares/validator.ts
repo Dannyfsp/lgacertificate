@@ -27,7 +27,7 @@ const schemas = {
     lastName: Joi.string().required(),
     middleName: Joi.string().required(),
     email: Joi.string().email().required(),
-    phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
+    phone: Joi.string().length(11).pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
     password: Joi.string().min(6).required(),
     confirmPassword: Joi.string()
         .valid(Joi.ref('password'))
@@ -59,7 +59,7 @@ const schemas = {
     communityHead: Joi.string().required(),
     communityHeadContact: Joi.string().required(),
     village: Joi.string().required(),
-    nin: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
+    nin: Joi.string().length(11).pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
     passport: Joi.string().required(),
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),

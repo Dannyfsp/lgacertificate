@@ -194,17 +194,21 @@ const ApplicationController = {
       application.isPendingApproval = true;
       application.pendingPaymentLink = null;
       await application.save({ session });
+      
+      await session.commitTransaction();
 
       const user = await User.findById(application.user);
-      if (!user) return errorResponse(res, 'user not found', 400)
+      if (!user) {
+        await session.abortTransaction();
+        return errorResponse(res, 'user not found', 400)
+      }       
 
       emitter.emit('application-awaiting-approval', {
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
-        applicationId: application._id,
+        applicationID: application._id,
       });
 
-      await session.commitTransaction();
       return res.redirect(`${config.app.FRONT_END_URL}/successful?ref=${transactionRef}`);
     } catch (err: any) {
       await session.abortTransaction();
@@ -287,7 +291,7 @@ const ApplicationController = {
         emitter.emit('application-approved', {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
-          applicationId: application._id,
+          applicationID: application._id,
         });
       } else {
         application.isRejected = true;
@@ -296,7 +300,7 @@ const ApplicationController = {
         emitter.emit('application-rejected', {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
-          applicationId: application._id,
+          applicationID: application._id,
         });
       }
       await application.save();
