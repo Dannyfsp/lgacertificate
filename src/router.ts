@@ -40,6 +40,7 @@ router.get("/admin/applications/rejected", adminAuthMiddleware, ApplicationContr
 router.post("/certificate/request-verification/:id", authMiddleware, CertificateController.requestVerificationCode);
 router.get("/certificate/payment/verify", CertificateController.verifyCertificateVerificationCodePayment);
 router.get("/certificate/verify/:ref", CertificateController.confirmVerificationCode);
+router.get("/certificates", authMiddleware, CertificateController.getCertificates);
 router.delete("/certificate/nullify-verification/:ref", CertificateController.nullifyVerificationCode);
 // router.get("/certificate/download/:id", authMiddleware, CertificateController.downloadCertificate);
 

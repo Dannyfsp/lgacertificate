@@ -58,7 +58,7 @@ emitter.on('application-rejected', async (data: { email: string; name: string, a
   });
 });
 
-emitter.on('certificate-verification-code', async (data: { email: string; name: string, verificationCode: string }) => {
+emitter.on('certificate-verification', async (data: { email: string; name: string, verificationCode: string }) => {
   await sendEmail({
     email: data.email,
     subject: 'Cerificate Verification Code Generated',

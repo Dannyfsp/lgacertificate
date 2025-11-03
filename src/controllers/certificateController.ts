@@ -169,6 +169,8 @@ const CertificateController = {
       const user = await User.findById(certificate.user);
       if (!user) return errorResponse(res, 'User not found', 404);
 
+      console.log(certificate.verificationCode);      
+
       emitter.emit('certificate-verification', {
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
@@ -203,6 +205,16 @@ const CertificateController = {
       if (verificationCode !== certVerificationCode) return errorResponse(res, 'Certificate not verified', 400);
 
       return successResponse(res, 'Certificate verified', { ref: certificateRef });
+    } catch (err: any) {
+      return errorResponse(res, err.message, 500);
+    }
+  },
+  
+  getCertificates: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const user = req.user;
+      const certificates = await Certificate.find({ user: user._id });
+      return successResponse(res, 'Certificates retrieved successfully', { certificates });
     } catch (err: any) {
       return errorResponse(res, err.message, 500);
     }
