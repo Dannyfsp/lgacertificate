@@ -24,6 +24,7 @@ const CertificateController = {
     try {
       const user = req.user;
       const applicationId = req.params.id;
+      const {email} = req.body
 
       const certificate = await Certificate.findOne({ user: user._id, application: applicationId });
       if (!certificate) {
@@ -68,6 +69,7 @@ const CertificateController = {
 
       certificate.isVerificationPaymentPending = true;
       certificate.pendingPaymentLink = response?.data?.link;
+      certificate.emailOfVerification = email;
       await certificate.save({ session });
 
       const transaction = new Transaction({
@@ -167,12 +169,10 @@ const CertificateController = {
       await session.commitTransaction();
 
       const user = await User.findById(certificate.user);
-      if (!user) return errorResponse(res, 'User not found', 404);
-
-      console.log(certificate.verificationCode);      
+      if (!user) return errorResponse(res, 'User not found', 404);    
 
       emitter.emit('certificate-verification', {
-        email: user.email,
+        email: certificate.emailOfVerification,
         name: `${user.firstName} ${user.lastName}`,
         verificationCode: certificate.verificationCode,
       });
@@ -229,6 +229,7 @@ const CertificateController = {
       if (!certificate) return errorResponse(res, 'Certificate not found', 404);
 
       certificate.verificationCode = null;
+      certificate.emailOfVerification = null;
       certificate.isVerificationCodeGenerated = false;
       await certificate.save();
 

@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface ICertificate extends Document {
   certificateRef: string;
   verificationCode?: string | null | undefined;
+  emailOfVerification?: string | null | undefined;
   isVerificationCodeGenerated?: boolean;
   isVerificationPaymentPending?: boolean;
   pendingPaymentLink: string | null;
@@ -14,6 +15,7 @@ const certificateSchema = new Schema<ICertificate>(
   {
     certificateRef: { type: String, required: true },
     verificationCode: { type: String },
+    emailOfVerification: { type: String },
     isVerificationCodeGenerated: { type: Boolean, default: false },
     isVerificationPaymentPending: { type: Boolean, default: false },
     pendingPaymentLink: { type: String },

@@ -1,3 +1,5 @@
+import { config } from "../../config/app";
+
 export const certificateVerificationCodeTemp = async (name: string, verificationCode: string) => {
   const html = `
   <!DOCTYPE html>
@@ -37,11 +39,11 @@ export const certificateVerificationCodeTemp = async (name: string, verification
                               <h2 style="color: #1a7f3e; font-size: 24px; margin: 0 0 20px; text-align: center;">Your Application Has Been Received</h2>
                               
                               <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                  Dear <strong>${name}</strong>,
+                                  Dear Sir/Madam,
                               </p>
                               
                               <p style="color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                  This is to notify you that your certificate verification code for <strong>LGA Certificate</strong> has been generate successfully.
+                                  This is to notify you that the certificate verification code for <strong>LGA Certificate</strong> of <strong>${name}</strong> has been generated successfully.
                               </p>
                               
                               <!-- Application Details Box -->
@@ -88,7 +90,14 @@ export const certificateVerificationCodeTemp = async (name: string, verification
                             
                               
                               <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 20px 0 0;">
-                                  Please note that this your certification verification code: ${verificationCode} can only be used once.
+                                  Please note that this certification verification code: ${verificationCode} can only be used once.
+                              </p>
+                              
+                              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 20px 0 0;">
+                                  You can click on this link to direct your to the certificate verification portal: 
+                                  <span>
+                                    <a href="${config.app.FRONT_END_URL}/certificate-verify"></>
+                                  </span>.
                               </p>
                           </td>
                       </tr>

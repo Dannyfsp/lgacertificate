@@ -98,9 +98,6 @@ const AuthController = {
       // Compare provided OTP with hashed one in DB
       const isOTPMatch = await compareHash(otp, user.verifyEmailOTP);
       if (!isOTPMatch) {
-        user.verifyEmailOTP = undefined;
-        user.verifyEmailOTPExpire = undefined;
-        await user.save();
         return errorResponse(res, 'Invalid or expired OTP', 400);
       }
 
@@ -206,9 +203,6 @@ const AuthController = {
       // Compare provided OTP with hashed one in DB
       const isOTPMatch = await compareHash(otp, user.resetPasswordOTP);
       if (!isOTPMatch) {
-        user.resetPasswordOTP = undefined;
-        user.resetPasswordExpire = undefined;
-        await user.save();
         return errorResponse(res, 'Invalid or expired OTP', 400);
       }
 
@@ -216,7 +210,6 @@ const AuthController = {
       user.password = await hash(password);
       user.resetPasswordOTP = undefined;
       user.resetPasswordExpire = undefined;
-
       await user.save();
 
       return successResponse(res, 'Password reset successful', {});

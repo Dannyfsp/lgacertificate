@@ -37,7 +37,7 @@ router.get("/admin/applications/approved", adminAuthMiddleware, ApplicationContr
 router.get("/admin/applications/rejected", adminAuthMiddleware, ApplicationController.getRejectedApplications);
 
 // Certificate Routers
-router.post("/certificate/request-verification/:id", authMiddleware, CertificateController.requestVerificationCode);
+router.post("/certificate/request-verification/:id", authMiddleware, validate(schemas.forgotPasswordSchema), CertificateController.requestVerificationCode);
 router.get("/certificate/payment/verify", CertificateController.verifyCertificateVerificationCodePayment);
 router.get("/certificate/verify/:ref", CertificateController.confirmVerificationCode);
 router.get("/certificates", authMiddleware, CertificateController.getCertificates);
