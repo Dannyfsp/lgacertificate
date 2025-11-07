@@ -12,6 +12,7 @@ export interface IApplication extends Document {
   communityHeadContact: string;
   passport: string;
   currentAddress: string;
+  stateOfOrigin: string;
   lga: string;
   isApproved: boolean;
   isRejected: boolean;
@@ -35,6 +36,7 @@ const applicationSchema = new Schema<IApplication>(
     passport: { type: String, required: true },
     currentAddress: { type: String, required: true },
     lga: { type: String, required: true },
+    stateOfOrigin: { type: String, required: true },
     isApproved: { type: Boolean, default: false },
     isRejected: { type: Boolean, default: false },
     isPendingPayment: { type: Boolean, default: true },

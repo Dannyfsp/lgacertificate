@@ -5,11 +5,23 @@ import { generateToken } from '../utils/jwtHandler';
 import emitter from '../utils/common/eventlisteners';
 import Admin from '../models/adminModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import statesData from '../services/states.json';
 
 const AdminController = {
   signup: async (req: Request, res: Response) => {
     try {
-      const { firstName, lastName, email, position, staffID, lga, phone } = req.body;
+      const { firstName, lastName, email, position, staffID, stateOfOrigin, lga, phone } = req.body;
+
+      // 1️⃣ Validate state
+      if (!Object.keys(statesData).includes(stateOfOrigin)) {
+        return errorResponse(res, 'Invalid state of origin', 400);
+      }
+
+      // 2️⃣ Validate LGA within the selected state
+      const validLgas = statesData[stateOfOrigin as keyof typeof statesData];
+      if (!validLgas.includes(lga)) {
+        return errorResponse(res, 'Invalid LGA for the selected state', 400);
+      }
 
       const existingAdmin = await Admin.findOne({ email });
       if (existingAdmin) return errorResponse(res, 'Official already registered', 400);
@@ -23,6 +35,7 @@ const AdminController = {
         email,
         position,
         staffID,
+        stateOfOrigin,
         lga,
         phone,
         password: hashedPassword,
@@ -32,7 +45,7 @@ const AdminController = {
         email: email,
         name: `${firstName} ${lastName}`,
         password: password,
-      });      
+      });
 
       return successResponse(res, 'Invitation Email sent to admin successfully', {
         adminId: admin._id,
@@ -41,7 +54,7 @@ const AdminController = {
       return errorResponse(res, err.message, 500);
     }
   },
-  
+
   login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
@@ -52,7 +65,12 @@ const AdminController = {
       const isMatch = await compareHash(password, admin.password);
       if (!isMatch) return errorResponse(res, 'Invalid credentials', 400);
 
-      const token = generateToken({ id: admin._id, email: admin.email });
+      const token = generateToken({
+        id: admin._id,
+        email: admin.email,
+        state: admin.stateOfOrigin,
+        lga: admin.lga,
+      });
 
       const adminObj: any = admin.toObject();
       delete adminObj.password;
@@ -187,15 +205,15 @@ const AdminController = {
 
   changePassword: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const admin = req.user;      
-      const { oldPassword, newPassword } = req.body;      
+      const admin = req.user;
+      const { oldPassword, newPassword } = req.body;
 
       // Check if old password match
-      const isMatch = await compareHash(oldPassword, admin.password);      
+      const isMatch = await compareHash(oldPassword, admin.password);
       if (!isMatch) return errorResponse(res, 'Old password does not match', 400);
 
       const hashedPassword = await hash(newPassword);
-      
+
       admin.password = hashedPassword;
       await admin.save();
 

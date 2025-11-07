@@ -63,6 +63,7 @@ const schemas = {
     passport: Joi.string().required(),
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),
+    stateOfOrigin: Joi.string().required(),
   }),
   
   loginUserSchema: Joi.object().keys({
@@ -97,6 +98,7 @@ const schemas = {
     email: Joi.string().email().required(),
     position: Joi.string().required(),
     staffID: Joi.string().required(),
+    stateOfOrigin: Joi.string().required(),
     lga: Joi.string().required(),
     phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
   }),

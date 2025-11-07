@@ -18,6 +18,7 @@ import Certificate from '../models/certificationModal';
 import CertificateService from '../services/certificateService';
 import emitter from '../utils/common/eventlisteners';
 import User from '../models/userModel';
+import statesData from '../services/states.json';
 
 const ApplicationController = {
   createApplication: async (req: AuthenticatedRequest, res: Response) => {
@@ -38,7 +39,19 @@ const ApplicationController = {
         lga,
         nin,
         passport,
+        stateOfOrigin,
       } = req.body;
+
+      // 1️⃣ Validate state
+      if (!Object.keys(statesData).includes(stateOfOrigin)) {
+        return errorResponse(res, "Invalid state of origin", 400);
+      }
+
+      // 2️⃣ Validate LGA within the selected state
+      const validLgas = statesData[stateOfOrigin as keyof typeof statesData];
+      if (!validLgas.includes(lga)) {
+        return errorResponse(res, "Invalid LGA for the selected state", 400);
+      }
 
       const existingApplication = await Application.findOne({ nin, isPending: true });
       if (existingApplication) {
@@ -90,6 +103,7 @@ const ApplicationController = {
         communityHeadContact,
         currentAddress,
         lga,
+        stateOfOrigin,
         nin,
         passport: passportUrl,
         user: user._id,
@@ -230,11 +244,25 @@ const ApplicationController = {
 
   getPendingApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const applications = await Application.find({
-        isApproved: false,
-        isRejected: false,
-        isPendingApproval: true,
-      }).sort({ createdAt: -1 });
+      const admin = req.user;
+
+      let applications;
+      if (admin.stateOfOrigin === "Ogun") {
+        applications = await Application.find({
+          isApproved: false,
+          isRejected: false,
+          isPendingApproval: true,
+          lga: admin.lga
+        }).sort({ createdAt: -1 });
+      } else {
+        applications = await Application.find({
+          isApproved: false,
+          isRejected: false,
+          isPendingApproval: true,
+          stateOfOrigin: { $ne: "Ogun" }
+        }).sort({ createdAt: -1 });
+      }
+      
       return successResponse(res, 'pending application retrieved successfully', { applications });
     } catch (err: any) {
       return errorResponse(res, err.message, 500);
@@ -243,7 +271,14 @@ const ApplicationController = {
 
   getApprovedApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const applications = await Application.find({ isApproved: true }).sort({ createdAt: -1 });
+      const admin = req.user;
+      let applications
+
+      if (admin.stateOfOrigin === "Ogun") {
+        applications = await Application.find({ isApproved: true, lga: admin.lga }).sort({ createdAt: -1 });
+      } else {
+        applications = await Application.find({ isApproved: true, stateOfOrigin: { $ne: "Ogun" } }).sort({ createdAt: -1 });
+      }
       return successResponse(res, 'approved application retrieved successfully', { applications });
     } catch (err: any) {
       return errorResponse(res, err.message, 500);
@@ -252,7 +287,14 @@ const ApplicationController = {
 
   getRejectedApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const applications = await Application.find({ isRejected: true }).sort({ createdAt: -1 });
+      const admin = req.user;
+      let applications;
+
+      if (admin.stateOfOrigin === "Ogun") {
+        applications = await Application.find({ isRejected: true, lga: admin.lga }).sort({ createdAt: -1 });
+      } else {
+        applications = await Application.find({ isRejected: true, stateOfOrigin: { $ne: "Ogun" } }).sort({ createdAt: -1 });
+      }
       return successResponse(res, 'rejected application retrieved successfully', { applications });
     } catch (err: any) {
       return errorResponse(res, err.message, 500);
@@ -263,10 +305,27 @@ const ApplicationController = {
     try {
       const id = req.params.id;
       const approve = req.query.approve;
+      const admin = req.user;
 
       const application = await Application.findById(id);
       if (!application) {
         return errorResponse(res, 'application not found', 404);
+      }
+
+      // If admin is from Ogun
+      if (admin.stateOfOrigin === "Ogun") {
+        if (application.stateOfOrigin !== "Ogun") {
+          // Ogun admin cannot approve applications outside Ogun
+          return errorResponse(res, "request revoked: Ogun officials cannot approve applications outside Ogun state", 400);
+        }
+        if (admin.lga !== application.lga) {
+          // Ogun admin can only approve within their own LGA
+          return errorResponse(res, "request revoked: local govt area of official does not match", 400);
+        }
+      } else {
+        if (application.stateOfOrigin === "Ogun") {
+          return errorResponse(res, "request revoked: non-Ogun officials cannot approve Ogun applications", 400);
+        }
       }
 
       if (application.isApproved) return errorResponse(res, 'application already approved', 400);

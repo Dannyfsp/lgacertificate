@@ -5,6 +5,7 @@ import ApplicationController from "./controllers/applicationController";
 import { adminAuthMiddleware, authMiddleware, superAdminAuthMiddleware } from "./middlewares/authMiddleware";
 import AdminController from "./controllers/adminController";
 import CertificateController from "./controllers/certificateController";
+import UtilController from "./controllers/utilController";
 
 const router = Router();
 
@@ -43,6 +44,11 @@ router.get("/certificate/verify/:ref", CertificateController.confirmVerification
 router.get("/certificates", authMiddleware, CertificateController.getCertificates);
 router.delete("/certificate/nullify-verification/:ref", CertificateController.nullifyVerificationCode);
 // router.get("/certificate/download/:id", authMiddleware, CertificateController.downloadCertificate);
+
+// Util Routers
+// GET states and LGAs
+router.get("/states", UtilController.getAllStates);
+router.get("/lgas", UtilController.getLGA);
 
 
 export default router;
