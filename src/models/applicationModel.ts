@@ -14,6 +14,7 @@ export interface IApplication extends Document {
   currentAddress: string;
   stateOfOrigin: string;
   lga: string;
+  isResidentOfOgun?: boolean | null;
   isApproved: boolean;
   isRejected: boolean;
   isPendingPayment: boolean;
@@ -37,6 +38,7 @@ const applicationSchema = new Schema<IApplication>(
     currentAddress: { type: String, required: true },
     lga: { type: String, required: true },
     stateOfOrigin: { type: String, required: true },
+    isResidentOfOgun: { type: Boolean },
     isApproved: { type: Boolean, default: false },
     isRejected: { type: Boolean, default: false },
     isPendingPayment: { type: Boolean, default: true },

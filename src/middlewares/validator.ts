@@ -64,6 +64,7 @@ const schemas = {
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),
     stateOfOrigin: Joi.string().required(),
+    isResidentOfOgun: Joi.boolean(),
   }),
   
   loginUserSchema: Joi.object().keys({

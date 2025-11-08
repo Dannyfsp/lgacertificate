@@ -40,6 +40,7 @@ const ApplicationController = {
         nin,
         passport,
         stateOfOrigin,
+        isResidentOfOgun,
       } = req.body;
 
       // 1️⃣ Validate state
@@ -51,6 +52,12 @@ const ApplicationController = {
       const validLgas = statesData[stateOfOrigin as keyof typeof statesData];
       if (!validLgas.includes(lga)) {
         return errorResponse(res, "Invalid LGA for the selected state", 400);
+      }
+
+      const isResidentOfOgunBool = Boolean(isResidentOfOgun);
+
+      if (stateOfOrigin !== "Ogun" && !isResidentOfOgunBool) {
+        return errorResponse(res, "Must be a resident of Ogun State if not from Ogun State", 400);
       }
 
       const existingApplication = await Application.findOne({ nin, isPending: true });
@@ -108,6 +115,7 @@ const ApplicationController = {
         passport: passportUrl,
         user: user._id,
         pendingPaymentLink: response?.data?.link,
+        isResidentOfOgun: isResidentOfOgun || null,
       });
 
       await application.save({ session });
