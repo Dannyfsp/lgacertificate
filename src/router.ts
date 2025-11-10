@@ -6,6 +6,7 @@ import { adminAuthMiddleware, authMiddleware, superAdminAuthMiddleware } from ".
 import AdminController from "./controllers/adminController";
 import CertificateController from "./controllers/certificateController";
 import UtilController from "./controllers/utilController";
+import SignatoryController from "./controllers/signatoryController";
 
 const router = Router();
 
@@ -49,6 +50,12 @@ router.delete("/certificate/nullify-verification/:ref", CertificateController.nu
 // GET states and LGAs
 router.get("/states", UtilController.getAllStates);
 router.get("/lgas", UtilController.getLGA);
+
+// Signatory Routers
+router.get("/signatory/:lga", SignatoryController.getSignatory);
+router.post("/signatory", adminAuthMiddleware, validate(schemas.createSignatory), SignatoryController.createSignatory);
+router.put("/signatory", adminAuthMiddleware, validate(schemas.createSignatory), SignatoryController.updateSignatory);
+router.delete("/signatory/:lga", adminAuthMiddleware, SignatoryController.deleteSignatory);
 
 
 export default router;
