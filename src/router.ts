@@ -53,8 +53,8 @@ router.get("/lgas", UtilController.getLGA);
 
 // Signatory Routers
 router.get("/signatory/:lga", SignatoryController.getSignatory);
-router.post("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatory), SignatoryController.createSignatory);
-router.put("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatory), SignatoryController.updateSignatory);
+router.post("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatorySchema), SignatoryController.createSignatory);
+router.put("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatorySchema), SignatoryController.updateSignatory);
 router.delete("/signatory/:lga", superAdminAuthMiddleware, SignatoryController.deleteSignatory);
 
 

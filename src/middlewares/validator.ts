@@ -104,12 +104,19 @@ const schemas = {
     phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
   }),
   
-  createSignatory: Joi.object().keys({
+  createSignatorySchema: Joi.object().keys({
     lga: Joi.string().required(),
     chairmanName: Joi.string().required(),
     secretaryName: Joi.string().required(),
-    chairmanSignature: Joi.string().required(),
-    secretarySignature: Joi.string().required(),
+    chairmanSignature: Joi.string()
+        .required()
+        .pattern(/^(https:\/\/|data:image)/)
+        .message('Chairman signature must be a valid URL starting with "https://" or a base64 image starting with "data:image"'),
+    
+    secretarySignature: Joi.string()
+        .required()
+        .pattern(/^(https:\/\/|data:image)/)
+        .message('Secretary signature must be a valid URL starting with "https://" or a base64 image starting with "data:image"'),
   }),
 
   changePasswordSchema: Joi.object().keys({
