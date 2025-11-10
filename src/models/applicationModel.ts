@@ -11,6 +11,9 @@ export interface IApplication extends Document {
   communityHead: string;
   communityHeadContact: string;
   passport: string;
+  passportPublicId?: string;
+  docFromCommunityHead?: string | null;
+  docFromCommunityHeadPublicId?: string | null;
   currentAddress: string;
   stateOfOrigin: string;
   lga: string;
@@ -35,6 +38,9 @@ const applicationSchema = new Schema<IApplication>(
     communityHead: { type: String, required: true },
     communityHeadContact: { type: String, required: true },
     passport: { type: String, required: true },
+    passportPublicId: { type: String, required: true },
+    docFromCommunityHead: { type: String },
+    docFromCommunityHeadPublicId: { type: String },
     currentAddress: { type: String, required: true },
     lga: { type: String, required: true },
     stateOfOrigin: { type: String, required: true },

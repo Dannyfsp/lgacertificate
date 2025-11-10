@@ -3,12 +3,28 @@ import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import { errorResponse, successResponse } from "../utils/responseUtils";
 import statesData from '../services/states.json';
 import Signatory from "../models/signatoryModel";
-import { uploadBase64ToCloudinary } from "../utils/upload";
+import { uploadToCloudinary } from "../utils/upload";
 
 const SignatoryController = {
     createSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
-            const {lga, chairmanName, chairmanSignature, secretaryName, secretarySignature} = req.body;
+            const {lga, chairmanName, secretaryName} = req.body;
+
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            const chairmanSignature = files["chairmanSignature"]?.[0];
+            const secretarySignature = files["secretarySignature"]?.[0];
+
+            if (!chairmanSignature || !secretarySignature) {
+                return res.status(400).json({ message: "Both chairman signature and secretary signature are required" });
+            }
+
+            if (!["image/jpeg", "image/png", "image/jpg"].includes(chairmanSignature.mimetype)) {
+                return errorResponse(res, "chairman signature must be a JPG or PNG image", 400);
+            }
+            
+            if (!["image/jpeg", "image/png", "image/jpg"].includes(secretarySignature.mimetype)) {
+                return errorResponse(res, "secretary signature must be a JPG or PNG image", 400);
+            }
 
             // 2️⃣ Validate LGA within the selected state
             const validLgas = statesData["Ogun" as keyof typeof statesData];
@@ -20,8 +36,8 @@ const SignatoryController = {
             if (signatoryExist) return errorResponse(res, "Signatory already exist", 400);
 
             const [chairmanSignatureUrl, secretarySignatureUrl] = await Promise.all([
-                uploadBase64ToCloudinary(chairmanSignature),
-                uploadBase64ToCloudinary(secretarySignature),
+                uploadToCloudinary(chairmanSignature.buffer, "signatory", "image"),
+                uploadToCloudinary(secretarySignature.buffer, "signatory", "image"),
             ]);
 
             const signatory = await Signatory.create({
@@ -40,7 +56,23 @@ const SignatoryController = {
     
     updateSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
-            const {lga, chairmanName, chairmanSignature, secretaryName, secretarySignature} = req.body;
+            const {lga, chairmanName, secretaryName} = req.body;
+
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            const chairmanSignature = files["chairmanSignature"]?.[0];
+            const secretarySignature = files["secretarySignature"]?.[0];
+
+            if (!chairmanSignature || !secretarySignature) {
+                return res.status(400).json({ message: "Both chairman signature and secretary signature are required" });
+            }
+
+            if (!["image/jpeg", "image/png", "image/jpg"].includes(chairmanSignature.mimetype)) {
+                return errorResponse(res, "chairman signature must be a JPG or PNG image", 400);
+            }
+            
+            if (!["image/jpeg", "image/png", "image/jpg"].includes(secretarySignature.mimetype)) {
+                return errorResponse(res, "secretary signature must be a JPG or PNG image", 400);
+            }
 
             // 2️⃣ Validate LGA within the selected state
             const validLgas = statesData["Ogun" as keyof typeof statesData];
@@ -56,10 +88,9 @@ const SignatoryController = {
             };
 
             const [chairmanSignatureUrl, secretarySignatureUrl] = await Promise.all([
-                shouldUpload(chairmanSignature) ? uploadBase64ToCloudinary(chairmanSignature) : chairmanSignature,
-                shouldUpload(secretarySignature) ? uploadBase64ToCloudinary(secretarySignature) : secretarySignature,
+                uploadToCloudinary(chairmanSignature.buffer, "signatory", "image"),
+                uploadToCloudinary(secretarySignature.buffer, "signatory", "image"),
             ]);
-
 
             const signatory = await Signatory.findOneAndUpdate(
                 { lga },

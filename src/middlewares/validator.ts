@@ -64,7 +64,7 @@ const schemas = {
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),
     stateOfOrigin: Joi.string().required(),
-    isResidentOfOgun: Joi.boolean(),
+    isResidentOfOgun: Joi.boolean().optional(),
   }),
   
   loginUserSchema: Joi.object().keys({
@@ -107,16 +107,7 @@ const schemas = {
   createSignatorySchema: Joi.object().keys({
     lga: Joi.string().required(),
     chairmanName: Joi.string().required(),
-    secretaryName: Joi.string().required(),
-    chairmanSignature: Joi.string()
-        .required()
-        .pattern(/^(https:\/\/|data:image)/)
-        .message('Chairman signature must be a valid URL starting with "https://" or a base64 image starting with "data:image"'),
-    
-    secretarySignature: Joi.string()
-        .required()
-        .pattern(/^(https:\/\/|data:image)/)
-        .message('Secretary signature must be a valid URL starting with "https://" or a base64 image starting with "data:image"'),
+    secretaryName: Joi.string().required(),  
   }),
 
   changePasswordSchema: Joi.object().keys({

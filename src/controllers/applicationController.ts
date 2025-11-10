@@ -13,7 +13,7 @@ import Transaction, {
   TransactionType,
 } from '../models/transactionModel';
 import { AppError } from '../utils/appError';
-import { uploadBase64ToCloudinary } from '../utils/upload';
+import { uploadBase64ToCloudinary, uploadToCloudinary } from '../utils/upload';
 import Certificate from '../models/certificationModal';
 import CertificateService from '../services/certificateService';
 import emitter from '../utils/common/eventlisteners';
@@ -38,10 +38,17 @@ const ApplicationController = {
         currentAddress,
         lga,
         nin,
-        passport,
         stateOfOrigin,
         isResidentOfOgun,
       } = req.body;
+
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const passportFile = files["passport"]?.[0];
+      const docFile = files["docFromCommunityHead"]?.[0];
+
+      if (!passportFile) {
+        return res.status(400).json({ message: "Passport is required" });
+      }
 
       // 1️⃣ Validate state
       if (!Object.keys(statesData).includes(stateOfOrigin)) {
@@ -54,8 +61,7 @@ const ApplicationController = {
         return errorResponse(res, "Invalid LGA for the selected state", 400);
       }
 
-      const isResidentOfOgunBool = Boolean(isResidentOfOgun);
-
+      const isResidentOfOgunBool = isResidentOfOgun === "true" || isResidentOfOgun === true;
       if (stateOfOrigin !== "Ogun" && !isResidentOfOgunBool) {
         return errorResponse(res, "Must be a resident of Ogun State if not from Ogun State", 400);
       }
@@ -66,7 +72,11 @@ const ApplicationController = {
         return errorResponse(res, 'Existing application pending', 400);
       }
 
-      const passportUrl = await uploadBase64ToCloudinary(passport);
+      // ✅ Upload files to Cloudinary
+    const [passportData, docData] = await Promise.all([
+      uploadToCloudinary(passportFile.buffer, "applications", "image"),
+      docFile ? uploadToCloudinary(docFile.buffer, "applications", "raw") : Promise.resolve(null),
+    ]);
 
       const transactionRef = generateTransactionRef();
 
@@ -112,7 +122,10 @@ const ApplicationController = {
         lga,
         stateOfOrigin,
         nin,
-        passport: passportUrl,
+        passport: passportData.secureUrl,
+        passportPublicId: passportData.publicId, 
+        docFromCommunityHead: docData?.secureUrl,
+        docFromCommunityHeadPublicId: docData?.publicId,
         user: user._id,
         pendingPaymentLink: response?.data?.link,
         isResidentOfOgun: isResidentOfOgun || null,

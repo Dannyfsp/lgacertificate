@@ -9,6 +9,32 @@ cloudinary.config({
     api_secret: config.cloudinary.API_SECRET,
 });
 
+export const uploadToCloudinary = async (
+  fileBuffer: Buffer,
+  folder: string,
+  resourceType: "image" | "raw" = "image"
+): Promise<{ secureUrl: string; publicId: string }> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: resourceType },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result) return reject("Upload failed");
+        resolve({ secureUrl: result.secure_url, publicId: result.public_id });
+      }
+    );
+
+    uploadStream.end(fileBuffer);
+  });
+};
+
+export const deleteFromCloudinary = async (
+  publicId: string,
+  resourceType: "image" | "raw" = "image"
+): Promise<void> => {
+  await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+};
+
 export const uploadBase64ToCloudinary = async (
   base64String: string,
   folder: string = 'lga_certificates_passports'

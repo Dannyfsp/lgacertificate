@@ -7,6 +7,7 @@ import AdminController from "./controllers/adminController";
 import CertificateController from "./controllers/certificateController";
 import UtilController from "./controllers/utilController";
 import SignatoryController from "./controllers/signatoryController";
+import upload from "./utils/multer";
 
 const router = Router();
 
@@ -20,7 +21,15 @@ router.post("/auth/reset-password", validate(schemas.resetPasswordSchema), AuthC
 router.post("/auth/resend-otp", validate(schemas.forgotPasswordSchema), AuthController.resendOTP);
 
 // Application Routers
-router.post("/application", authMiddleware, validate(schemas.createApplicationSchema), ApplicationController.createApplication);
+router.post("/application", 
+    authMiddleware, 
+    upload.fields([
+        { name: "passport", maxCount: 1 },
+        { name: "docFromCommunityHead", maxCount: 1 },
+    ]), 
+    validate(schemas.createApplicationSchema),
+    ApplicationController.createApplication
+);
 router.get("/application", authMiddleware, ApplicationController.getUserApplications);
 router.get("/application/payment/verify", ApplicationController.verifyPayment);
 
@@ -53,7 +62,15 @@ router.get("/lgas", UtilController.getLGA);
 
 // Signatory Routers
 router.get("/signatory/:lga", SignatoryController.getSignatory);
-router.post("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatorySchema), SignatoryController.createSignatory);
+router.post("/signatory", 
+    superAdminAuthMiddleware, 
+    upload.fields([
+        { name: "chairmanSignature", maxCount: 1 },
+        { name: "secretarySignature", maxCount: 1 },
+    ]),
+    validate(schemas.createSignatorySchema), 
+    SignatoryController.createSignatory
+);
 router.put("/signatory", superAdminAuthMiddleware, validate(schemas.createSignatorySchema), SignatoryController.updateSignatory);
 router.delete("/signatory/:lga", superAdminAuthMiddleware, SignatoryController.deleteSignatory);
 
