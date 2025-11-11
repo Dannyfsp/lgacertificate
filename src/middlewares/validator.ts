@@ -60,11 +60,11 @@ const schemas = {
     communityHeadContact: Joi.string().required(),
     village: Joi.string().required(),
     nin: Joi.string().length(11).pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
-    passport: Joi.string().required(),
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),
     stateOfOrigin: Joi.string().required(),
     isResidentOfOgun: Joi.boolean().optional(),
+    lgaOfResident: Joi.string().optional(),
   }),
   
   loginUserSchema: Joi.object().keys({

@@ -13,7 +13,7 @@ import Transaction, {
   TransactionType,
 } from '../models/transactionModel';
 import { AppError } from '../utils/appError';
-import { uploadBase64ToCloudinary, uploadToCloudinary } from '../utils/upload';
+import { uploadToCloudinary } from '../utils/upload';
 import Certificate from '../models/certificationModal';
 import CertificateService from '../services/certificateService';
 import emitter from '../utils/common/eventlisteners';
@@ -40,6 +40,7 @@ const ApplicationController = {
         nin,
         stateOfOrigin,
         isResidentOfOgun,
+        lgaOfResident,
       } = req.body;
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -47,7 +48,17 @@ const ApplicationController = {
       const docFile = files["docFromCommunityHead"]?.[0];
 
       if (!passportFile) {
-        return res.status(400).json({ message: "Passport is required" });
+        return errorResponse(res, "Passport is required", 400);
+      }
+
+      // ✅ Validate passport file is an image
+      if (!["image/jpeg", "image/png", "image/jpg"].includes(passportFile.mimetype)) {
+        return errorResponse(res, "Passport must be a JPG or PNG image", 400);
+      }
+
+      // ✅ Validate document file is a PDF (if provided)
+      if (docFile && docFile.mimetype !== "application/pdf") {
+        return errorResponse(res, "Community head document must be a PDF file", 400);
       }
 
       // 1️⃣ Validate state
@@ -64,6 +75,15 @@ const ApplicationController = {
       const isResidentOfOgunBool = isResidentOfOgun === "true" || isResidentOfOgun === true;
       if (stateOfOrigin !== "Ogun" && !isResidentOfOgunBool) {
         return errorResponse(res, "Must be a resident of Ogun State if not from Ogun State", 400);
+      }
+      if (stateOfOrigin !== "Ogun" && !lgaOfResident) {
+        return errorResponse(res, "Must enter a LGA of residence of Ogun State if not from Ogun State", 400);
+      }
+      if (stateOfOrigin !== "Ogun" && lgaOfResident) {
+        const validLgasOfResident = statesData["Ogun" as keyof typeof statesData];
+         if (!validLgasOfResident.includes(lgaOfResident)) {
+            return errorResponse(res, "Invalid LGA of Residence for Ogun state", 400);
+        }
       }
 
       const existingApplication = await Application.findOne({ nin, isPending: true });
@@ -129,6 +149,7 @@ const ApplicationController = {
         user: user._id,
         pendingPaymentLink: response?.data?.link,
         isResidentOfOgun: isResidentOfOgun || null,
+        lgaOfResident: lgaOfResident || null,
       });
 
       await application.save({ session });
@@ -141,7 +162,7 @@ const ApplicationController = {
         application: application._id,
       });
       await transaction.save({ session });
-      await session.commitTransaction();
+      await session.commitTransaction();      
 
       return successResponse(res, 'redirect to payment link', {
         txRef: transactionRef,

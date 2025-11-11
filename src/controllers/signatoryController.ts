@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 import { errorResponse, successResponse } from "../utils/responseUtils";
 import statesData from '../services/states.json';
 import Signatory from "../models/signatoryModel";
-import { uploadToCloudinary } from "../utils/upload";
+import { deleteFromCloudinary, uploadToCloudinary } from "../utils/upload";
 
 const SignatoryController = {
     createSignatory: async (req: AuthenticatedRequest, res: Response) => {
@@ -15,7 +15,7 @@ const SignatoryController = {
             const secretarySignature = files["secretarySignature"]?.[0];
 
             if (!chairmanSignature || !secretarySignature) {
-                return res.status(400).json({ message: "Both chairman signature and secretary signature are required" });
+                return errorResponse(res, "Both chairman signature and secretary signature are required", 400);
             }
 
             if (!["image/jpeg", "image/png", "image/jpg"].includes(chairmanSignature.mimetype)) {
@@ -35,7 +35,7 @@ const SignatoryController = {
             const signatoryExist = await Signatory.findOne({ lga });
             if (signatoryExist) return errorResponse(res, "Signatory already exist", 400);
 
-            const [chairmanSignatureUrl, secretarySignatureUrl] = await Promise.all([
+            const [chairmanSignatureData, secretarySignatureData] = await Promise.all([
                 uploadToCloudinary(chairmanSignature.buffer, "signatory", "image"),
                 uploadToCloudinary(secretarySignature.buffer, "signatory", "image"),
             ]);
@@ -44,8 +44,10 @@ const SignatoryController = {
                 lga, 
                 chairmanName, 
                 secretaryName, 
-                chairmanSignature: chairmanSignatureUrl,
-                secretarySignature: secretarySignatureUrl, 
+                chairmanSignature: chairmanSignatureData.secureUrl,
+                chairmanSignaturePublicId: chairmanSignatureData.publicId,
+                secretarySignature: secretarySignatureData.secureUrl, 
+                secretarySignaturePublicId: secretarySignatureData.publicId, 
             });
 
             return successResponse(res, `Signatory for ${lga} LGA registered successfully`, signatory);
@@ -83,11 +85,12 @@ const SignatoryController = {
             const signatoryExist = await Signatory.findOne({ lga });
             if (!signatoryExist) return errorResponse(res, "Signatory does not exist", 400);
 
-            const shouldUpload = (signature: string) => {
-                return !signature.startsWith('https://') && signature.startsWith('data:image');
-            };
+            await Promise.all([
+                deleteFromCloudinary(signatoryExist.chairmanSignaturePublicId, "image"),
+                deleteFromCloudinary(signatoryExist.secretarySignaturePublicId, "image"),
+            ]);
 
-            const [chairmanSignatureUrl, secretarySignatureUrl] = await Promise.all([
+            const [chairmanSignatureData, secretarySignatureData] = await Promise.all([
                 uploadToCloudinary(chairmanSignature.buffer, "signatory", "image"),
                 uploadToCloudinary(secretarySignature.buffer, "signatory", "image"),
             ]);
@@ -97,8 +100,10 @@ const SignatoryController = {
                 { 
                     chairmanName, 
                     secretaryName, 
-                    chairmanSignature: chairmanSignatureUrl,
-                    secretarySignature: secretarySignatureUrl, 
+                    chairmanSignature: chairmanSignatureData.secureUrl,
+                    chairmanSignaturePublicId: chairmanSignatureData.publicId,
+                    secretarySignature: secretarySignatureData.secureUrl, 
+                    secretarySignaturePublicId: secretarySignatureData.publicId, 
                 }
             );
 
@@ -139,6 +144,11 @@ const SignatoryController = {
 
             const signatory = await Signatory.findOne({ lga });
             if (!signatory) return errorResponse(res, "Signatory does not exist", 400);
+
+            await Promise.all([
+                deleteFromCloudinary(signatory.chairmanSignaturePublicId, "image"),
+                deleteFromCloudinary(signatory.secretarySignaturePublicId, "image"),
+            ]);
 
             await Signatory.findOneAndDelete({lga});
 
