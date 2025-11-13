@@ -317,9 +317,9 @@ const ApplicationController = {
       let applications
 
       if (admin.stateOfOrigin === "Ogun") {
-        applications = await Application.find({ isApproved: true, lga: admin.lga }).sort({ createdAt: -1 });
+        applications = await Application.find({ isApproved: true, lga: admin.lga }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
       } else {
-        applications = await Application.find({ isApproved: true, stateOfOrigin: { $ne: "Ogun" } }).sort({ createdAt: -1 });
+        applications = await Application.find({ isApproved: true, stateOfOrigin: { $ne: "Ogun" } }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
       }
       return successResponse(res, 'approved application retrieved successfully', { applications });
     } catch (err: any) {
