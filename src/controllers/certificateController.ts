@@ -195,7 +195,7 @@ const CertificateController = {
       if (!certificateRef || !verificationCode)
         return errorResponse(res, 'Invalid Reference Format', 400);
 
-      const certificate = await Certificate.findOne({ certificateRef });
+      const certificate = await Certificate.findOne({ certificateRef }).populate('application').populate('user');
       if (!certificate) return errorResponse(res, 'Certificate not found', 400);
 
       if (!certificate.verificationCode) return errorResponse(res, 'Certificate not verified', 400);
@@ -204,7 +204,7 @@ const CertificateController = {
   
       if (verificationCode !== certVerificationCode) return errorResponse(res, 'Certificate not verified', 400);
 
-      return successResponse(res, 'Certificate verified', { ref: certificateRef });
+      return successResponse(res, 'Certificate verified', { ref: certificateRef,  certificate});
     } catch (err: any) {
       return errorResponse(res, err.message, 500);
     }
