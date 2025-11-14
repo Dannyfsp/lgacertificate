@@ -53,7 +53,6 @@ router.get("/certificate/payment/verify", CertificateController.verifyCertificat
 router.get("/certificate/verify/:ref", CertificateController.confirmVerificationCode);
 router.get("/certificates", authMiddleware, CertificateController.getCertificates);
 router.delete("/certificate/nullify-verification/:ref", CertificateController.nullifyVerificationCode);
-// router.get("/certificate/download/:id", authMiddleware, CertificateController.downloadCertificate);
 
 // Util Routers
 // GET states and LGAs
