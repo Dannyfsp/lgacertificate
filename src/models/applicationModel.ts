@@ -2,14 +2,14 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IApplication extends Document {
   fullNames: string;
-  nin: string;
-  fatherNames: string;
-  motherNames: string;
-  nativeTown: string;
-  nativePoliticalWard: string;
-  village: string;
-  communityHead: string;
-  communityHeadContact: string;
+  nin?: string;
+  fatherNames?: string;
+  motherNames?: string;
+  nativeTown?: string;
+  nativePoliticalWard?: string;
+  village?: string;
+  communityHead?: string;
+  communityHeadContact?: string;
   passport: string;
   passportPublicId?: string;
   docFromCommunityHead?: string | null;
@@ -17,7 +17,7 @@ export interface IApplication extends Document {
   currentAddress: string;
   stateOfOrigin: string;
   lga: string;
-  isResidentOfOgun?: boolean | null;
+  isResidentOfOgun?: boolean;
   lgaOfResident?: string | null;
   isApproved: boolean;
   isRejected: boolean;
@@ -30,14 +30,14 @@ export interface IApplication extends Document {
 const applicationSchema = new Schema<IApplication>(
   {
     fullNames: { type: String, required: true },
-    nin: { type: String, required: true },
-    fatherNames: { type: String, required: true },
-    motherNames: { type: String, required: true },
-    nativeTown: { type: String, required: true },
-    nativePoliticalWard: { type: String, required: true },
-    village: { type: String, required: true },
-    communityHead: { type: String, required: true },
-    communityHeadContact: { type: String, required: true },
+    nin: { type: String },
+    fatherNames: { type: String },
+    motherNames: { type: String },
+    nativeTown: { type: String },
+    nativePoliticalWard: { type: String },
+    village: { type: String },
+    communityHead: { type: String },
+    communityHeadContact: { type: String },
     passport: { type: String, required: true },
     passportPublicId: { type: String, required: true },
     docFromCommunityHead: { type: String },

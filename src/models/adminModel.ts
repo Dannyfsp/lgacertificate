@@ -27,7 +27,7 @@ const adminSchema = new Schema<IAdmin>({
   phone: { type: String },
   role: { type: String, enum: Object.values(AdminRole), default: AdminRole.ADMIN },
   password: { type: String, required: true },
-  stateOfOrigin: { type: String, required: true },
+  stateOfOrigin: { type: String, default: 'Ogun' },
   lga: { type: String, required: true },
   position: { type: String },
   staffID: { type: String },

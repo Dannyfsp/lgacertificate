@@ -10,15 +10,10 @@ import statesData from '../services/states.json';
 const AdminController = {
   signup: async (req: Request, res: Response) => {
     try {
-      const { firstName, lastName, email, position, staffID, stateOfOrigin, lga, phone } = req.body;
-
-      // 1️⃣ Validate state
-      if (!Object.keys(statesData).includes(stateOfOrigin)) {
-        return errorResponse(res, 'Invalid state of origin', 400);
-      }
+      const { firstName, lastName, email, position, staffID, lga, phone } = req.body;
 
       // 2️⃣ Validate LGA within the selected state
-      const validLgas = statesData[stateOfOrigin as keyof typeof statesData];
+      const validLgas = statesData["Ogun" as keyof typeof statesData];
       if (!validLgas.includes(lga)) {
         return errorResponse(res, 'Invalid LGA for the selected state', 400);
       }
@@ -35,7 +30,7 @@ const AdminController = {
         email,
         position,
         staffID,
-        stateOfOrigin,
+        stateOfOrigin: "Ogun",
         lga,
         phone,
         password: hashedPassword,

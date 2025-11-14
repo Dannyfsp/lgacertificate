@@ -51,15 +51,15 @@ const schemas = {
   }),
   
   createApplicationSchema: Joi.object().keys({
-    fullNames: Joi.string().required(),
-    fatherNames: Joi.string().required(),
-    motherNames: Joi.string().required(),
-    nativeTown: Joi.string().required(),
-    nativePoliticalWard: Joi.string().required(),
-    communityHead: Joi.string().required(),
-    communityHeadContact: Joi.string().required(),
-    village: Joi.string().required(),
-    nin: Joi.string().length(11).pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
+    fullNames: Joi.string().optional(),
+    fatherNames: Joi.string().optional(),
+    motherNames: Joi.string().optional(),
+    nativeTown: Joi.string().optional(),
+    nativePoliticalWard: Joi.string().optional(),
+    communityHead: Joi.string().optional(),
+    communityHeadContact: Joi.string().optional(),
+    village: Joi.string().optional(),
+    nin: Joi.string().length(11).pattern(/^\d{10,15}$/).optional(), // Allow 10-15 digit phone numbers
     currentAddress: Joi.string().required(),
     lga: Joi.string().required(),
     stateOfOrigin: Joi.string().required(),
@@ -99,7 +99,6 @@ const schemas = {
     email: Joi.string().email().required(),
     position: Joi.string().required(),
     staffID: Joi.string().required(),
-    stateOfOrigin: Joi.string().required(),
     lga: Joi.string().required(),
     phone: Joi.string().pattern(/^\d{10,15}$/).required(), // Allow 10-15 digit phone numbers
   }),
