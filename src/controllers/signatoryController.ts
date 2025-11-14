@@ -9,6 +9,7 @@ const SignatoryController = {
     createSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
             const {lga, chairmanName, secretaryName} = req.body;
+            const admin = req.user;
 
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
             const chairmanSignature = files["chairmanSignature"]?.[0];
@@ -31,6 +32,8 @@ const SignatoryController = {
             if (!validLgas.includes(lga)) {
                 return errorResponse(res, "Invalid LGA for Ogun state", 400);
             }
+
+            if (lga !== admin.lga) return errorResponse(res, "request revoked: officials can only register signatories relating to their respective LGA", 400);
 
             const signatoryExist = await Signatory.findOne({ lga });
             if (signatoryExist) return errorResponse(res, "Signatory already exist", 400);
@@ -59,6 +62,7 @@ const SignatoryController = {
     updateSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
             const {lga, chairmanName, secretaryName} = req.body;
+            const admin = req.user
 
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };
             const chairmanSignature = files["chairmanSignature"]?.[0];
@@ -82,6 +86,8 @@ const SignatoryController = {
                 return errorResponse(res, "Invalid LGA for Ogun state", 400);
             }
 
+            if (lga !== admin.lga) return errorResponse(res, "request revoked: officials can only update signatories relating to their respective LGA", 400);
+            
             const signatoryExist = await Signatory.findOne({ lga });
             if (!signatoryExist) return errorResponse(res, "Signatory does not exist", 400);
 
@@ -135,15 +141,18 @@ const SignatoryController = {
     deleteSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
             const lga = req.params.lga;
+            const admin = req.user;
 
-            // 2️⃣ Validate LGA within the selected state
             const validLgas = statesData["Ogun" as keyof typeof statesData];
             if (!validLgas.includes(lga)) {
                 return errorResponse(res, "Invalid LGA for Ogun state", 400);
             }
 
+            if (lga !== admin.lga) return errorResponse(res, "request revoked: officials can only delete signatories relating to their respective LGA", 400);
+
             const signatory = await Signatory.findOne({ lga });
             if (!signatory) return errorResponse(res, "Signatory does not exist", 400);
+
 
             await Promise.all([
                 deleteFromCloudinary(signatory.chairmanSignaturePublicId, "image"),
