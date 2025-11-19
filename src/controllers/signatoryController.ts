@@ -62,6 +62,7 @@ const SignatoryController = {
     updateSignatory: async (req: AuthenticatedRequest, res: Response) => {
         try {
             const {lga, chairmanName, secretaryName} = req.body;
+            
             const admin = req.user
 
             const files = req.files as { [fieldname: string]: Express.Multer.File[] };

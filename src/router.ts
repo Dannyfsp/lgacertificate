@@ -70,7 +70,14 @@ router.post("/signatory",
     validate(schemas.createSignatorySchema), 
     SignatoryController.createSignatory
 );
-router.put("/signatory", adminAuthMiddleware, validate(schemas.createSignatorySchema), SignatoryController.updateSignatory);
+router.put("/signatory", 
+    adminAuthMiddleware, 
+    upload.fields([
+        { name: "chairmanSignature", maxCount: 1 },
+        { name: "secretarySignature", maxCount: 1 },
+    ]),
+    validate(schemas.createSignatorySchema), 
+    SignatoryController.updateSignatory);
 router.delete("/signatory/:lga", adminAuthMiddleware, SignatoryController.deleteSignatory);
 
 
