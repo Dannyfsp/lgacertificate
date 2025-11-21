@@ -54,7 +54,7 @@ const applicationSchema = new Schema<IApplication>(
     lgaOfResident: { type: String },
     status: { type: String, enum: Object.values(ApplicationStatus), required: true },
     pendingPaymentLink: { type: String },
-    pendingApprovalRejectionDate: { type: Date },
+    pendingApprovalRejectionDate: { type: Date, default: null },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
