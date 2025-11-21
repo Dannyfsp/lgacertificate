@@ -268,6 +268,7 @@ const ApplicationController = {
         return errorResponse(res, 'application not found', 404);
       }
       application.status = ApplicationStatus.PENDING;
+      application.pendingApprovalRejectionDate = new Date();
       application.pendingPaymentLink = null;
       await application.save({ session });
       
@@ -402,7 +403,7 @@ const ApplicationController = {
 
       if (approve === 'true') {
         application.status = ApplicationStatus.APPROVED;
-        application.approvalRejectionDate = new Date();
+        application.pendingApprovalRejectionDate = new Date();
 
         const certificateRef = await CertificateService.certificateReference();
 
@@ -419,7 +420,7 @@ const ApplicationController = {
         });
       } else {
         application.status = ApplicationStatus.REJECTED;
-        application.approvalRejectionDate = new Date();
+        application.pendingApprovalRejectionDate = new Date();
 
         emitter.emit('application-rejected', {
           email: user.email,

@@ -28,7 +28,7 @@ export interface IApplication extends Document {
   lgaOfResident?: string | null;
   status: ApplicationStatus;
   pendingPaymentLink?: string | null;
-  approvalRejectionDate?: Date | null
+  pendingApprovalRejectionDate?: Date | null
   user: Types.ObjectId; // reference to User model
 }
 
@@ -54,7 +54,7 @@ const applicationSchema = new Schema<IApplication>(
     lgaOfResident: { type: String },
     status: { type: String, enum: Object.values(ApplicationStatus), required: true },
     pendingPaymentLink: { type: String },
-    approvalRejectionDate: { type: Date },
+    pendingApprovalRejectionDate: { type: Date },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
