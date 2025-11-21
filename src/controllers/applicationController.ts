@@ -20,6 +20,7 @@ import emitter from '../utils/common/eventlisteners';
 import User from '../models/userModel';
 import statesData from '../services/states.json';
 import { AdminRole } from '../models/adminModel';
+import { PipelineStage, FilterQuery } from "mongoose";
 
 const ApplicationController = {
   createApplication: async (req: AuthenticatedRequest, res: Response) => {
@@ -435,6 +436,226 @@ const ApplicationController = {
       return errorResponse(res, err.message, 500);
     }
   },
+
+  getApplicationSummary: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const admin = req.user;
+  
+      const match: FilterQuery<IApplication> = {};
+  
+      /** ROLE-BASED ACCESS FILTER */
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+        match.lga = admin.lga;
+      }
+
+      // Date helpers for "today"
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+  
+      const pipeline: PipelineStage[] = [
+        { $match: match },
+        { $sort: { createdAt: -1 } },
+        {
+          $facet: {
+            stats: [
+              {
+                $group: {
+                  _id: null,
+                  totalApplications: {
+                    $sum: {
+                      $cond: [
+                        {
+                          $in: [
+                            "$status",
+                            [
+                              ApplicationStatus.APPROVED,
+                              ApplicationStatus.REJECTED,
+                              ApplicationStatus.PENDING,
+                            ],
+                            ],
+                        },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  totalApproved: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.APPROVED] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  totalRejected: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.REJECTED] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  totalPending: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.PENDING] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                },
+              },
+            ],
+  
+            today: [
+              {
+                $match: {
+                  pendingApprovalRejectionDate: {
+                    $gte: startOfToday,
+                    $lte: endOfToday,
+                  },
+                },
+              },
+              {
+                $group: {
+                  _id: null,
+                  todayCount: { 
+                    $sum: {
+                      $cond: [
+                        {
+                          $in: [
+                            "$status",
+                            [
+                              ApplicationStatus.APPROVED,
+                              ApplicationStatus.REJECTED,
+                              ApplicationStatus.PENDING,
+                            ],
+                            ],
+                        },
+                        1,
+                        0,
+                      ],
+                    },
+                   },
+                  todayApproved: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.APPROVED] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  todayRejected: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.REJECTED] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  todayPending: {
+                    $sum: {
+                      $cond: [
+                        { $eq: ["$status", ApplicationStatus.PENDING] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ];
+  
+      const result = await Application.aggregate(pipeline);
+
+      return successResponse(res, "summary retrieved successfully", {summary: { ...(result[0].stats[0] || {}), ...(result[0].today[0] || {}) }});
+  
+    } catch (error: any) {
+      return errorResponse(res, error.message || "Server error fetching summary", 500);
+    }
+  },
+
+  getFilteredApplications: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const admin = req.user as any; // authenticated admin
+      const {
+        name,
+        status,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 10,
+      } = req.query;
+
+      const match: FilterQuery<IApplication> = {};
+
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+        match.$or = [{ lga: admin.lga }, { lgaOfResident: admin.lga }];
+      }
+
+      if (name) {
+        match.fullNames = { $regex: name as string, $options: "i" };
+        const applications = await Application.find(match)
+          .sort({ createdAt: -1 })
+          .populate("user", "firstName lastName email");
+
+        if (!applications.length) return errorResponse(res, "Not Found", 404);
+
+        return successResponse(res, "filtered application(s) retrieved successfully", applications);
+      }
+
+      if (status && !Object.values(ApplicationStatus).includes(status as ApplicationStatus)) return errorResponse(res, "Invalid application status", 400);
+
+      if (
+        status &&
+        Object.values(ApplicationStatus).includes(status as ApplicationStatus)
+      ) {
+        match.status = status as ApplicationStatus;
+      }
+
+      // Date range filter for pendingApprovalRejectionDate
+      if (startDate || endDate) {
+        match.pendingApprovalRejectionDate = {};
+        if (startDate) match.pendingApprovalRejectionDate.$gte = new Date(startDate as string);
+        if (endDate) match.pendingApprovalRejectionDate.$lte = new Date(endDate as string);
+      }
+
+      // Pagination
+      const skip = (Number(page) - 1) * Number(limit);
+
+      // Fetch applications and total count in parallel
+      const [applications, total] = await Promise.all([
+        Application.find(match)
+          .sort({createdAt: -1})
+          .skip(skip)
+          .limit(Number(limit))
+          .populate("user", "firstName lastName email"), // populate user info if needed
+        Application.countDocuments(match),
+      ]);
+
+      return successResponse(res, "filtered applications retrieved successfully", {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        data: applications,
+      });
+    } catch (error: any) {
+      return errorResponse(res, error.message || "Server error fetching filtered application", 500);
+    }
+  }
 };
+
+
 
 export default ApplicationController;
