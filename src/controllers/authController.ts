@@ -4,7 +4,7 @@ import { errorResponse, successResponse } from '../utils/responseUtils';
 import { compareHash, hash } from '../utils/hash';
 import { generateToken } from '../utils/jwtHandler';
 import emitter from '../utils/common/eventlisteners';
-import Application from '../models/applicationModel';
+import Application, { ApplicationStatus } from '../models/applicationModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 const AuthController = {
@@ -128,7 +128,7 @@ const AuthController = {
 
       const pendingApplicationCount = await Application.countDocuments({
         user: user._id,
-        isPendingPayment: true,
+        status: ApplicationStatus.PENDING_PAYMENT,
       });
       const pendingApplication = pendingApplicationCount > 0 ? true : false;
 

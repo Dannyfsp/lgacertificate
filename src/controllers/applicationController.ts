@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { errorResponse, successResponse } from '../utils/responseUtils';
-import Application from '../models/applicationModel';
+import Application, { ApplicationStatus, IApplication } from '../models/applicationModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { generateTransactionRef } from '../utils/hash';
 import { restClientWithHeaders } from '../utils/apiCalls/restcall';
@@ -149,7 +149,7 @@ const ApplicationController = {
         return errorResponse(res, 'an error has occurred', 500);
       }
 
-      const application = new Application({
+      const application: IApplication = new Application({
         fullNames,
         fatherNames: stateOfOrigin === "Ogun" ? fatherNames : null,
         motherNames: stateOfOrigin === "Ogun" ? motherNames : null,
@@ -166,6 +166,7 @@ const ApplicationController = {
         passportPublicId: passportData.publicId, 
         docFromCommunityHead: docData?.secureUrl || null,
         docFromCommunityHeadPublicId: docData?.publicId || null,
+        status: ApplicationStatus.PENDING_PAYMENT,
         user: user._id,
         pendingPaymentLink: response?.data?.link,
         isResidentOfOgun: isResidentOfOgunBool || null,
@@ -266,8 +267,7 @@ const ApplicationController = {
         await session.abortTransaction();
         return errorResponse(res, 'application not found', 404);
       }
-      application.isPendingPayment = false;
-      application.isPendingApproval = true;
+      application.status = ApplicationStatus.PENDING;
       application.pendingPaymentLink = null;
       await application.save({ session });
       
@@ -310,18 +310,14 @@ const ApplicationController = {
       
       if (admin.role !== AdminRole.SUPER_ADMIN) {
         const applications = await Application.find({
-          isApproved: false,
-          isRejected: false,
-          isPendingApproval: true,
+          status: ApplicationStatus.PENDING,
         }).sort({ createdAt: -1 });
       
         return successResponse(res, 'pending application retrieved successfully', { applications });
       }
 
       const applications = await Application.find({
-        isApproved: false,
-        isRejected: false,
-        isPendingApproval: true,
+        status: ApplicationStatus.PENDING,
         $or: [
           { lga: admin.lga },
           { lgaOfResident: admin.lga }
@@ -341,7 +337,7 @@ const ApplicationController = {
 
       if (admin.role !== AdminRole.SUPER_ADMIN) {
           const applications = await Application.find({ 
-          isApproved: true,
+          status: ApplicationStatus.APPROVED,
         }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
 
       
@@ -349,7 +345,7 @@ const ApplicationController = {
       }
 
       const applications = await Application.find({ 
-        isApproved: true, 
+        status: ApplicationStatus.APPROVED, 
         $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}]
       }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
       
@@ -365,14 +361,14 @@ const ApplicationController = {
 
       if (admin.role !== AdminRole.SUPER_ADMIN) {
         const applications = await Application.find({ 
-          isRejected: true,
+          status: ApplicationStatus.REJECTED,
         }).sort({ createdAt: -1 });
 
         return successResponse(res, 'rejected application retrieved successfully', { applications });
       }
 
       const applications = await Application.find({ 
-        isRejected: true, 
+        status: ApplicationStatus.REJECTED,
         $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}] 
       }).sort({ createdAt: -1 });
       
@@ -397,16 +393,16 @@ const ApplicationController = {
          return errorResponse(res, "request revoked: officials can only approve applications relating to their respective LGA", 400);
       }
 
-      if (application.isApproved) return errorResponse(res, 'application already approved', 400);
-      if (application.isRejected) return errorResponse(res, 'application already rejected', 400);
-      if (application.isPendingPayment) return errorResponse(res, 'application payment not yet completed', 400);
+      if (application.status === ApplicationStatus.APPROVED) return errorResponse(res, 'application already approved', 400);
+      if (application.status === ApplicationStatus.REJECTED) return errorResponse(res, 'application already rejected', 400);
+      if (application.status === ApplicationStatus.PENDING_PAYMENT) return errorResponse(res, 'application payment not yet completed', 400);
 
       const user = await User.findById(application.user);
       if (!user) return errorResponse(res, 'user not found', 400);
 
       if (approve === 'true') {
-        application.isApproved = true;
-        application.isPendingApproval = false;
+        application.status = ApplicationStatus.APPROVED;
+        application.approvalRejectionDate = new Date();
 
         const certificateRef = await CertificateService.certificateReference();
 
@@ -422,8 +418,8 @@ const ApplicationController = {
           applicationID: application._id,
         });
       } else {
-        application.isRejected = true;
-        application.isPendingApproval = false;
+        application.status = ApplicationStatus.REJECTED;
+        application.approvalRejectionDate = new Date();
 
         emitter.emit('application-rejected', {
           email: user.email,

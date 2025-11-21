@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
+export enum ApplicationStatus {
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+  PENDING_PAYMENT = 'pending_payment',
+}
+
 export interface IApplication extends Document {
   fullNames: string;
   nin?: string;
@@ -19,11 +26,9 @@ export interface IApplication extends Document {
   lga: string;
   isResidentOfOgun?: boolean;
   lgaOfResident?: string | null;
-  isApproved: boolean;
-  isRejected: boolean;
-  isPendingPayment: boolean;
-  isPendingApproval: boolean;
-  pendingPaymentLink: string | null;
+  status: ApplicationStatus;
+  pendingPaymentLink?: string | null;
+  approvalRejectionDate?: Date | null
   user: Types.ObjectId; // reference to User model
 }
 
@@ -47,11 +52,9 @@ const applicationSchema = new Schema<IApplication>(
     stateOfOrigin: { type: String, required: true },
     isResidentOfOgun: { type: Boolean },
     lgaOfResident: { type: String },
-    isApproved: { type: Boolean, default: false },
-    isRejected: { type: Boolean, default: false },
-    isPendingPayment: { type: Boolean, default: true },
+    status: { type: String, enum: Object.values(ApplicationStatus), required: true },
     pendingPaymentLink: { type: String },
-    isPendingApproval: { type: Boolean, default: false },
+    approvalRejectionDate: { type: Date },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
