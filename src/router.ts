@@ -2,7 +2,7 @@ import { Router } from "express";
 import { schemas, validate } from "./middlewares/validator";
 import AuthController from "./controllers/authController";
 import ApplicationController from "./controllers/applicationController";
-import { adminAuthMiddleware, authMiddleware, superAdminAuthMiddleware } from "./middlewares/authMiddleware";
+import { adminAuthMiddleware, authMiddleware } from "./middlewares/authMiddleware";
 import AdminController from "./controllers/adminController";
 import CertificateController from "./controllers/certificateController";
 import UtilController from "./controllers/utilController";
@@ -34,7 +34,7 @@ router.get("/application", authMiddleware, ApplicationController.getUserApplicat
 router.get("/application/payment/verify", ApplicationController.verifyPayment);
 
 // Super Admin Routers
-router.post("/admin/signup", superAdminAuthMiddleware, validate(schemas.createAdminSchema), AdminController.signup);
+router.post("/admin/signup", adminAuthMiddleware, validate(schemas.createAdminSchema), AdminController.signup);
 
 // Admin Routers
 router.post("/admin/login", validate(schemas.loginUserSchema), AdminController.login);

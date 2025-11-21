@@ -16,7 +16,7 @@ export interface IAdmin extends Document {
   resetPasswordExpire?: Date | null | undefined;
   role: string;
   stateOfOrigin: string;
-  lga: string;
+  lga?: string;
   staffID?: string;
 }
 
@@ -28,7 +28,7 @@ const adminSchema = new Schema<IAdmin>({
   role: { type: String, enum: Object.values(AdminRole), default: AdminRole.ADMIN },
   password: { type: String, required: true },
   stateOfOrigin: { type: String, default: 'Ogun' },
-  lga: { type: String, required: true },
+  lga: { type: String },
   position: { type: String },
   staffID: { type: String },
   resetPasswordOTP: {type: String},

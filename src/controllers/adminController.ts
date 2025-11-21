@@ -3,14 +3,17 @@ import { errorResponse, successResponse } from '../utils/responseUtils';
 import { compareHash, generateRandomPassword, hash } from '../utils/hash';
 import { generateToken } from '../utils/jwtHandler';
 import emitter from '../utils/common/eventlisteners';
-import Admin from '../models/adminModel';
+import Admin, { AdminRole } from '../models/adminModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import statesData from '../services/states.json';
 
 const AdminController = {
-  signup: async (req: Request, res: Response) => {
+  signup: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { firstName, lastName, email, position, staffID, lga, phone } = req.body;
+      const user = req.user;
+
+      if (user.role !== AdminRole.SUPER_ADMIN) return errorResponse(res, "Unauthorized", 401);
 
       // 2️⃣ Validate LGA within the selected state
       const validLgas = statesData["Ogun" as keyof typeof statesData];

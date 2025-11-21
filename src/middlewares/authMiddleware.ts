@@ -52,26 +52,3 @@ export const adminAuthMiddleware = async (req: AuthenticatedRequest, res: Respon
         errorResponse(res, "Unauthorized", 401);
     }
 }
-
-export const superAdminAuthMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) return errorResponse(res, "Unauthorized: No token provided", 401);
-
-        const token = authHeader.split(" ")[1];
-
-        // Verify the token
-        const decoded = verifyToken(token);
-        
-        // get admin
-        const admin = await Admin.findById((decoded as any).id);
-        if (!admin) return errorResponse(res, "Unauthorized", 401);
-        if (admin && admin.role !== AdminRole.SUPER_ADMIN) return errorResponse(res, "Unauthorized", 401);
-        
-        req.user = admin;
-
-        next();
-    } catch (error) {
-        errorResponse(res, "Unauthorized", 401);
-    }
-}

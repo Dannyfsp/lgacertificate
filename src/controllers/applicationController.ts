@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { errorResponse, successResponse } from '../utils/responseUtils';
 import Application from '../models/applicationModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
@@ -19,6 +19,7 @@ import CertificateService from '../services/certificateService';
 import emitter from '../utils/common/eventlisteners';
 import User from '../models/userModel';
 import statesData from '../services/states.json';
+import { AdminRole } from '../models/adminModel';
 
 const ApplicationController = {
   createApplication: async (req: AuthenticatedRequest, res: Response) => {
@@ -306,6 +307,16 @@ const ApplicationController = {
   getPendingApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const admin = req.user;
+      
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+        const applications = await Application.find({
+          isApproved: false,
+          isRejected: false,
+          isPendingApproval: true,
+        }).sort({ createdAt: -1 });
+      
+        return successResponse(res, 'pending application retrieved successfully', { applications });
+      }
 
       const applications = await Application.find({
         isApproved: false,
@@ -327,7 +338,20 @@ const ApplicationController = {
   getApprovedApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const admin = req.user;
-      const applications = await Application.find({ isApproved: true, $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}]}).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
+
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+          const applications = await Application.find({ 
+          isApproved: true,
+        }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
+
+      
+        return successResponse(res, 'approved application retrieved successfully', { applications });
+      }
+
+      const applications = await Application.find({ 
+        isApproved: true, 
+        $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}]
+      }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
       
       return successResponse(res, 'approved application retrieved successfully', { applications });
     } catch (err: any) {
@@ -338,7 +362,19 @@ const ApplicationController = {
   getRejectedApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const admin = req.user;
-      const applications = await Application.find({ isRejected: true, $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}] }).sort({ createdAt: -1 });
+
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+        const applications = await Application.find({ 
+          isRejected: true,
+        }).sort({ createdAt: -1 });
+
+        return successResponse(res, 'rejected application retrieved successfully', { applications });
+      }
+
+      const applications = await Application.find({ 
+        isRejected: true, 
+        $or: [{lga: admin.lga}, {lgaOfResident: admin.lga}] 
+      }).sort({ createdAt: -1 });
       
       return successResponse(res, 'rejected application retrieved successfully', { applications });
     } catch (err: any) {
