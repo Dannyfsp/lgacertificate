@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { errorResponse, successResponse } from '../utils/responseUtils';
 import Application, { ApplicationStatus, IApplication } from '../models/applicationModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
-import { generateTransactionRef } from '../utils/hash';
+import { generateTransactionRef, isValidDateFormat } from '../utils/hash';
 import { restClientWithHeaders } from '../utils/apiCalls/restcall';
 import { IBaseResponse } from '../utils/apiCalls/IResponse';
 import { config } from '../config/app';
@@ -624,11 +624,29 @@ const ApplicationController = {
         match.status = status as ApplicationStatus;
       }
 
-      // Date range filter for pendingApprovalRejectionDate
       if (startDate || endDate) {
         match.pendingApprovalRejectionDate = {};
-        if (startDate) match.pendingApprovalRejectionDate.$gte = new Date(startDate as string);
-        if (endDate) match.pendingApprovalRejectionDate.$lte = new Date(endDate as string);
+
+        // --- Validate startDate ---
+        if (startDate) {
+          if (!isValidDateFormat(startDate as string)) {
+            return errorResponse(res, "Invalid startDate format. Expected YYYY-MM-DD.", 400);
+          }
+
+          const start = new Date(`${startDate}T00:00:00.000Z`);
+          match.pendingApprovalRejectionDate.$gte = start;
+        }
+
+        // --- Validate endDate ---
+        if (endDate) {
+          if (!isValidDateFormat(endDate as string)) {
+            return errorResponse(res, "Invalid endDate format. Expected YYYY-MM-DD.", 400);
+          }
+
+          // Set endDate to 23:59:59.999 in UTC
+          const end = new Date(`${endDate}T23:59:59.999Z`);
+          match.pendingApprovalRejectionDate.$lte = end;
+        }
       }
 
       // Pagination

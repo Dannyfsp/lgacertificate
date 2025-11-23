@@ -45,3 +45,9 @@ export const generateCertificateRef = (length: number): string => {
   }
   return `OGLGA${result}`;
 };
+
+// Validate date format YYYY-MM-DD
+export const isValidDateFormat = (dateStr: string): boolean => {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  return regex.test(dateStr);
+}

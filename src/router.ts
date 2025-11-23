@@ -43,9 +43,11 @@ router.post("/admin/forgot-password", validate(schemas.forgotPasswordSchema), Ad
 router.post("/admin/reset-password", validate(schemas.resetPasswordSchema), AdminController.resetPassword);
 router.post("/admin/resend-otp", validate(schemas.resetPasswordSchema), AdminController.resendOTP);
 router.post("/admin/application/:id", adminAuthMiddleware, ApplicationController. approveApplicationsByAdmin);
+router.get("/admin/applications", adminAuthMiddleware, ApplicationController.getFilteredApplications);
 router.get("/admin/applications/pending", adminAuthMiddleware, ApplicationController.getPendingApplications);
 router.get("/admin/applications/approved", adminAuthMiddleware, ApplicationController.getApprovedApplications);
 router.get("/admin/applications/rejected", adminAuthMiddleware, ApplicationController.getRejectedApplications);
+router.get("/admin/summary/application", adminAuthMiddleware, ApplicationController.getApplicationSummary);
 
 // Certificate Routers
 router.post("/certificate/request-verification/:id", authMiddleware, validate(schemas.forgotPasswordSchema), CertificateController.requestVerificationCode);
