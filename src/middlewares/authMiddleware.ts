@@ -43,7 +43,6 @@ export const adminAuthMiddleware = async (req: AuthenticatedRequest, res: Respon
         // get admin
         const admin = await Admin.findById((decoded as any).id);
         if (!admin) return errorResponse(res, "Unauthorized", 401);
-        if (admin && admin.role !== AdminRole.ADMIN) return errorResponse(res, "Unauthorized", 401);
         
         req.user = admin;
 
