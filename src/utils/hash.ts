@@ -51,3 +51,17 @@ export const isValidDateFormat = (dateStr: string): boolean => {
   const regex = /^\d{4}-\d{2}-\d{2}$/;
   return regex.test(dateStr);
 }
+
+export const formatDateTimeForFilename = (date: Date): string => {
+  if (!date) return "N/A";
+
+  const iso = date.toISOString().replace("Z", "");
+  const [datePart, timePart] = iso.split("T");
+
+  return `${datePart}_${timePart.split(".")[0].replace(/:/g, "-")}`;
+}
+
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}

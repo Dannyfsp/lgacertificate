@@ -30,6 +30,8 @@ export interface IApplication extends Document {
   pendingPaymentLink?: string | null;
   pendingApprovalRejectionDate?: Date | null
   user: Types.ObjectId; // reference to User model
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const applicationSchema = new Schema<IApplication>(

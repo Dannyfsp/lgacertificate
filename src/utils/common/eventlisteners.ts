@@ -7,6 +7,9 @@ import { successfulApplicationTemp } from '../templates/successfulApplicationTem
 import { applicationApprovedTemp } from '../templates/applicationApprovedTemp';
 import { applicationRejectedTemp } from '../templates/applicationRejectedTemp';
 import { certificateVerificationCodeTemp } from '../templates/certificateVerificationCodeTemp';
+import { generateCSVApplicationReport } from './generateCSVApplicationReport';
+import { IApplication } from '../../models/applicationModel';
+import { reportTemp } from '../templates/reportTemp';
 
 const emitter = new EventEmitter();
 
@@ -65,5 +68,33 @@ emitter.on('certificate-verification', async (data: { email: string; name: strin
     message: await certificateVerificationCodeTemp(data.name, data.verificationCode),
   });
 });
+
+emitter.on(
+  "send-application-report",
+  async (data: {
+    email: string;
+    applications: IApplication[];
+    nameOfFile: string;
+  }) => {
+
+    const csvBuffer = await generateCSVApplicationReport(data.applications);
+    const fileName = `${data.nameOfFile}.csv`;
+
+    await sendEmail({
+      email: data.email,
+      subject: "Application Report",
+      message: await reportTemp(),
+      attachments: [
+        {
+          filename: fileName,
+          content: csvBuffer,
+          type: "text/csv",
+          disposition: "attachment",
+        },
+      ],
+    });
+  }
+);
+
 
 export default emitter;

@@ -1,4 +1,4 @@
-export const verifyEmailTemp = async (otp: string, name: string) => {
+export const reportTemp = async () => {
   const html = `
   <!DOCTYPE html>
   <html lang="en">
@@ -6,7 +6,7 @@ export const verifyEmailTemp = async (otp: string, name: string) => {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email</title>
+    <title>Application Report</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -68,12 +68,11 @@ export const verifyEmailTemp = async (otp: string, name: string) => {
   <body>
     <div class="container">
       <header>
-        <h1>Email Verification</h1>
+        <h1>Application Report</h1>
       </header>
       <main>
-        <h2>Hi ${name},</h2>
-        <p>This email is to verify for your email.  You can verify your email using the OTP below:</p>
-        <p>Your OTP for verification of email is <b>${otp}</b></p>
+        <h2>Hi,</h2>
+        <p>Please find attached application report</p>
         <br>
         <p>Thanks</p>
         <p>If you have any questions, just reply to this email—we're always happy to help out.</p>

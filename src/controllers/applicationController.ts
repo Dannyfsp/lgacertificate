@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { errorResponse, successResponse } from '../utils/responseUtils';
 import Application, { ApplicationStatus, IApplication } from '../models/applicationModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
-import { generateTransactionRef, isValidDateFormat } from '../utils/hash';
+import { formatDateTimeForFilename, generateTransactionRef, isValidDateFormat, isValidEmail } from '../utils/hash';
 import { restClientWithHeaders } from '../utils/apiCalls/restcall';
 import { IBaseResponse } from '../utils/apiCalls/IResponse';
 import { config } from '../config/app';
@@ -596,6 +596,7 @@ const ApplicationController = {
         endDate,
         page = 1,
         limit = 10,
+        email,
       } = req.query;
 
       const match: FilterQuery<IApplication> = {};
@@ -662,12 +663,98 @@ const ApplicationController = {
         Application.countDocuments(match),
       ]);
 
+      if (email && (email !== null || email !== "")) {
+        const formattedDateTime = formatDateTimeForFilename(new Date());
+        emitter.emit('send-application-report', {
+          email: email,
+          applications: applications,
+          nameOfFile: `application_${formattedDateTime}.csv`,
+        });
+      }
+
       return successResponse(res, "filtered applications retrieved successfully", {
         total,
         page: Number(page),
         limit: Number(limit),
         data: applications,
       });
+    } catch (error: any) {
+      return errorResponse(res, error.message || "Server error fetching filtered application", 500);
+    }
+  },
+  
+  downloadApplicationReport: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const admin = req.user as any; // authenticated admin
+      const {
+        status,
+        startDate,
+        endDate,
+        email,
+      } = req.body;
+
+      if (!email) return errorResponse(res, "Email is required", 400);
+
+      if (typeof email !== "string" || !isValidEmail(email)) {
+        return errorResponse(res, "Invalid email address", 400);
+      }
+
+      const match: FilterQuery<IApplication> = {};
+
+      if (admin.role !== AdminRole.SUPER_ADMIN) {
+        match.$or = [{ lga: admin.lga }, { lgaOfResident: admin.lga }];
+      }
+
+      if (status && !Object.values(ApplicationStatus).includes(status as ApplicationStatus)) return errorResponse(res, "Invalid application status", 400);
+
+      if (
+        status &&
+        Object.values(ApplicationStatus).includes(status as ApplicationStatus)
+      ) {
+        match.status = status as ApplicationStatus;
+      }
+
+      if (startDate || endDate) {
+        match.pendingApprovalRejectionDate = {};
+
+        // --- Validate startDate ---
+        if (startDate) {
+          if (!isValidDateFormat(startDate as string)) {
+            return errorResponse(res, "Invalid startDate format. Expected YYYY-MM-DD.", 400);
+          }
+
+          const start = new Date(`${startDate}T00:00:00.000Z`);
+          match.pendingApprovalRejectionDate.$gte = start;
+        }
+
+        // --- Validate endDate ---
+        if (endDate) {
+          if (!isValidDateFormat(endDate as string)) {
+            return errorResponse(res, "Invalid endDate format. Expected YYYY-MM-DD.", 400);
+          }
+
+          // Set endDate to 23:59:59.999 in UTC
+          const end = new Date(`${endDate}T23:59:59.999Z`);
+          match.pendingApprovalRejectionDate.$lte = end;
+        }
+      }
+
+      // Fetch applications and total count in parallel
+      const [applications, total] = await Promise.all([
+        Application.find(match)
+          .sort({createdAt: -1})
+          .populate("user", "firstName lastName email"), // populate user info if needed
+        Application.countDocuments(match),
+      ]);
+
+      const formattedDateTime = formatDateTimeForFilename(new Date());
+      emitter.emit('send-application-report', {
+        email: email,
+        applications: applications,
+        nameOfFile: `report_${formattedDateTime}.csv`,
+      });
+        
+      return successResponse(res, "applications sent to email for download", {});
     } catch (error: any) {
       return errorResponse(res, error.message || "Server error fetching filtered application", 500);
     }

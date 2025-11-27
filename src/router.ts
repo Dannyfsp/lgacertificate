@@ -48,6 +48,7 @@ router.get("/admin/applications/pending", adminAuthMiddleware, ApplicationContro
 router.get("/admin/applications/approved", adminAuthMiddleware, ApplicationController.getApprovedApplications);
 router.get("/admin/applications/rejected", adminAuthMiddleware, ApplicationController.getRejectedApplications);
 router.get("/admin/summary/application", adminAuthMiddleware, ApplicationController.getApplicationSummary);
+router.post("/admin/download/application", adminAuthMiddleware, ApplicationController.downloadApplicationReport);
 
 // Certificate Routers
 router.post("/certificate/request-verification/:id", authMiddleware, validate(schemas.forgotPasswordSchema), CertificateController.requestVerificationCode);

@@ -48,8 +48,6 @@ const sendEmail = async (options: EmailOptions) => {
       attachments: options.attachments || undefined
     };
 
-    console.log(config.mail);
-
     const info = await transporter.sendMail(message);
     console.info('Message sent: %s', info.response);
     return info;
