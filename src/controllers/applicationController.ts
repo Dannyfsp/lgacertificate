@@ -310,7 +310,7 @@ const ApplicationController = {
     try {
       const admin = req.user;
       
-      if (admin.role !== AdminRole.SUPER_ADMIN) {
+      if (admin.role === AdminRole.SUPER_ADMIN) {
         const applications = await Application.find({
           status: ApplicationStatus.PENDING,
         }).sort({ createdAt: -1 });
@@ -337,7 +337,7 @@ const ApplicationController = {
     try {
       const admin = req.user;
 
-      if (admin.role !== AdminRole.SUPER_ADMIN) {
+      if (admin.role === AdminRole.SUPER_ADMIN) {
           const applications = await Application.find({ 
           status: ApplicationStatus.APPROVED,
         }).sort({ createdAt: -1 }).populate('user', 'firstName lastName email');
@@ -361,7 +361,7 @@ const ApplicationController = {
     try {
       const admin = req.user;
 
-      if (admin.role !== AdminRole.SUPER_ADMIN) {
+      if (admin.role === AdminRole.SUPER_ADMIN) {
         const applications = await Application.find({ 
           status: ApplicationStatus.REJECTED,
         }).sort({ createdAt: -1 });
@@ -440,9 +440,21 @@ const ApplicationController = {
   getApplicationSummary: async (req: AuthenticatedRequest, res: Response) => {
     try {
       const admin = req.user;
-  
+      const lga = req.query.lga as string | undefined;
+
+      
       const match: FilterQuery<IApplication> = {};
-  
+      
+      if (lga) {
+        if (admin.role !== AdminRole.SUPER_ADMIN) return errorResponse(res, "Unauthorized", 401);
+        const validLgas = statesData["Ogun" as keyof typeof statesData];
+        if (!validLgas.includes(lga)) {
+          return errorResponse(res, "Invalid LGA for Ogun State", 400);
+        }
+        
+        match.lga = lga;
+      }
+      
       /** ROLE-BASED ACCESS FILTER */
       if (admin.role !== AdminRole.SUPER_ADMIN) {
         match.lga = admin.lga;
