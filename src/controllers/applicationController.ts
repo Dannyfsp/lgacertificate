@@ -442,34 +442,35 @@ const ApplicationController = {
       const admin = req.user;
       const lga = req.query.lga as string | undefined;
 
-      
       const match: FilterQuery<IApplication> = {};
-      
+
       if (lga) {
-        if (admin.role !== AdminRole.SUPER_ADMIN) return errorResponse(res, "Unauthorized", 401);
+        if (admin.role !== AdminRole.SUPER_ADMIN)
+          return errorResponse(res, "Unauthorized", 401);
+
         const validLgas = statesData["Ogun" as keyof typeof statesData];
         if (!validLgas.includes(lga)) {
           return errorResponse(res, "Invalid LGA for Ogun State", 400);
         }
-        
+
         match.lga = lga;
       }
-      
-      /** ROLE-BASED ACCESS FILTER */
+
+      // Role based LGA restriction
       if (admin.role !== AdminRole.SUPER_ADMIN) {
         match.lga = admin.lga;
       }
 
-      // Date helpers for "today"
+      // Date range for today
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
 
       const endOfToday = new Date();
       endOfToday.setHours(23, 59, 59, 999);
-  
+
       const pipeline: PipelineStage[] = [
         { $match: match },
-        { $sort: { createdAt: -1 } },
+
         {
           $facet: {
             stats: [
@@ -485,59 +486,57 @@ const ApplicationController = {
                             [
                               ApplicationStatus.APPROVED,
                               ApplicationStatus.REJECTED,
-                              ApplicationStatus.PENDING,
-                            ],
-                            ],
+                              ApplicationStatus.PENDING
+                            ]
+                          ]
                         },
                         1,
-                        0,
-                      ],
-                    },
+                        0
+                      ]
+                    }
                   },
                   totalApproved: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.APPROVED] },
-                        1,
-                        0,
-                      ],
-                    },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.APPROVED] }, 1, 0]
+                    }
                   },
                   totalRejected: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.REJECTED] },
-                        1,
-                        0,
-                      ],
-                    },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.REJECTED] }, 1, 0]
+                    }
                   },
                   totalPending: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.PENDING] },
-                        1,
-                        0,
-                      ],
-                    },
-                  },
-                },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.PENDING] }, 1, 0]
+                    }
+                  }
+                }
               },
+              {
+                $project: {
+                  _id: 0,
+                  totalApplications: { $ifNull: ["$totalApplications", 0] },
+                  totalApproved: { $ifNull: ["$totalApproved", 0] },
+                  totalRejected: { $ifNull: ["$totalRejected", 0] },
+                  totalPending: { $ifNull: ["$totalPending", 0] }
+                }
+              }
             ],
-  
+
             today: [
               {
                 $match: {
+                  ...(match.lga && { lga: match.lga }),
                   pendingApprovalRejectionDate: {
                     $gte: startOfToday,
-                    $lte: endOfToday,
-                  },
-                },
+                    $lte: endOfToday
+                  }
+                }
               },
               {
                 $group: {
                   _id: null,
-                  todayCount: { 
+                  todayCount: {
                     $sum: {
                       $cond: [
                         {
@@ -546,57 +545,70 @@ const ApplicationController = {
                             [
                               ApplicationStatus.APPROVED,
                               ApplicationStatus.REJECTED,
-                              ApplicationStatus.PENDING,
-                            ],
-                            ],
+                              ApplicationStatus.PENDING
+                            ]
+                          ]
                         },
                         1,
-                        0,
-                      ],
-                    },
-                   },
+                        0
+                      ]
+                    }
+                  },
                   todayApproved: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.APPROVED] },
-                        1,
-                        0,
-                      ],
-                    },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.APPROVED] }, 1, 0]
+                    }
                   },
                   todayRejected: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.REJECTED] },
-                        1,
-                        0,
-                      ],
-                    },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.REJECTED] }, 1, 0]
+                    }
                   },
                   todayPending: {
                     $sum: {
-                      $cond: [
-                        { $eq: ["$status", ApplicationStatus.PENDING] },
-                        1,
-                        0,
-                      ],
-                    },
-                  },
-                },
+                      $cond: [{ $eq: ["$status", ApplicationStatus.PENDING] }, 1, 0]
+                    }
+                  }
+                }
               },
-            ],
-          },
-        },
+              {
+                $project: {
+                  _id: 0,
+                  todayCount: { $ifNull: ["$todayCount", 0] },
+                  todayApproved: { $ifNull: ["$todayApproved", 0] },
+                  todayRejected: { $ifNull: ["$todayRejected", 0] },
+                  todayPending: { $ifNull: ["$todayPending", 0] }
+                }
+              }
+            ]
+          }
+        }
       ];
-  
+
       const result = await Application.aggregate(pipeline);
 
-      return successResponse(res, "summary retrieved successfully", {summary: { ...(result[0].stats[0] || {}), ...(result[0].today[0] || {}) }});
-  
+      const stats = result[0].stats[0] || {
+        totalApplications: 0,
+        totalApproved: 0,
+        totalRejected: 0,
+        totalPending: 0
+      };
+
+      const today = result[0].today[0] || {
+        todayCount: 0,
+        todayApproved: 0,
+        todayRejected: 0,
+        todayPending: 0
+      };
+
+      return successResponse(res, "summary retrieved successfully", {
+        summary: { ...stats, ...today }
+      });
     } catch (error: any) {
       return errorResponse(res, error.message || "Server error fetching summary", 500);
     }
   },
+
 
   getFilteredApplications: async (req: AuthenticatedRequest, res: Response) => {
     try {
